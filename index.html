@@ -107,10 +107,19 @@
     .connection-form {display: grid; grid-template-columns: 1fr auto; gap: 10px;}
     @media(max-width: 560px) {.connection-form {grid-template-columns: 1fr;}}
 
+    /* إدارة البيانات المحلية */
+    .local-data-actions {display: flex; gap: 8px; margin: 16px 0; flex-wrap: wrap;}
+    
     /* التبويبات */
     .tabs {display: flex; gap: 8px; margin-bottom: 16px;}
     .tab {padding: 10px 16px; background: #e0e0e0; border-radius: var(--radius); cursor: pointer;}
     .tab.active {background: var(--primary); color: white;}
+    
+    /* رسائل الحالة */
+    .status-message {padding: 10px; border-radius: var(--radius); margin: 10px 0; text-align: center;}
+    .status-success {background: #e8f5e9; color: #2e7d32;}
+    .status-error {background: #ffebee; color: #c62828;}
+    .status-warning {background: #fff8e1; color: #ef6c00;}
   </style>
 </head>
 <body>
@@ -140,6 +149,13 @@
         <button id="btnConnect">اتصال</button>
       </div>
       <div class="hint">لإنشاء رابط Web App، اتبع الخطوات في <a href="#" id="helpLink">دليل الإعداد</a></div>
+    </div>
+    
+    <!-- إدارة البيانات المحلية -->
+    <div class="local-data-actions">
+      <button class="info" id="btnExportLocal">💾 تصدير البيانات المحلية</button>
+      <button class="info" id="btnImportLocal">📤 استيراد إلى البيانات المحلية</button>
+      <button class="danger" id="btnClearLocal">🗑️ مسح البيانات المحلية</button>
     </div>
     
     <!-- التبويبات -->
@@ -325,56 +341,215 @@
     ];
 
     // مساعد لطلبات الشبكة
-    async function api(action, payload={}){
-      if (!SCRIPT_URL) {
-        throw new Error("https://script.google.com/macros/s/AKfycbxRXdPLoRssbY7bs2Y-UcwKTFA_rPTD6ZAZtx9uLHwqLF34tQoxqVaE0Pi2ifAufwZt/exec");
+    async function api(action, payload = {}) {
+      if (!SCRIPT_URL || SCRIPT_URL.includes('PASTE_WEB_APP_URL_HERE')) {
+        // العمل في الوضع المحلي بدون اتصال
+        await simulateApiCall(action, payload);
+        return { success: true };
       }
-      
+
       toggleLoader(true);
-      const body = JSON.stringify({ action, ...payload });
       try {
-        const res = await fetch(SCRIPT_URL, { method:"POST", body, headers:{"Content-Type":"application/json"} });
-        if(!res.ok) throw new Error("HTTP " + res.status);
-        return await res.json();
+        const body = JSON.stringify({ action, ...payload });
+        const res = await fetch(SCRIPT_URL, {
+          method: "POST",
+          body,
+          headers: {
+            "Content-Type": "application/json"
+          }
+        });
+        
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        }
+        
+        const data = await res.json();
+        
+        if (data.error) {
+          throw new Error(data.error);
+        }
+        
+        return data;
+      } catch (e) {
+        console.error("API Error:", e);
+        
+        // المحاولة مرة أخرى بعد تأخير قصير (لمحاولة واحدة فقط)
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        try {
+          const body = JSON.stringify({ action, ...payload });
+          const res = await fetch(SCRIPT_URL, {
+            method: "POST",
+            body,
+            headers: {
+              "Content-Type": "application/json"
+            }
+          });
+          
+          if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+          return await res.json();
+        } catch (retryError) {
+          // إذا فشلت المحاولة الثانية، استخدم البيانات المحلية
+          await simulateApiCall(action, payload);
+          return { success: true };
+        }
       } finally {
         toggleLoader(false);
       }
     }
 
+    // محاكاة API للعمل دون اتصال
+    async function simulateApiCall(action, payload) {
+      await new Promise(resolve => setTimeout(resolve, 300)); // محاكاة التأخير
+      
+      switch (action) {
+        case 'add':
+          if (!payload.item) throw new Error('بيانات غير مكتملة');
+          if (ITEMS.some(item => item.code === payload.item.code)) {
+            throw new Error('رقم الصنف موجود مسبقاً');
+          }
+          ITEMS.push(payload.item);
+          localStorage.setItem('inventory_items', JSON.stringify(ITEMS));
+          break;
+          
+        case 'update':
+          if (!payload.item) throw new Error('بيانات غير مكتملة');
+          const index = ITEMS.findIndex(item => item.code === payload.item.code);
+          if (index === -1) throw new Error('لم يتم العثور على الصنف');
+          ITEMS[index] = payload.item;
+          localStorage.setItem('inventory_items', JSON.stringify(ITEMS));
+          break;
+          
+        case 'delete':
+          if (!payload.code) throw new Error('بيانات غير مكتملة');
+          ITEMS = ITEMS.filter(item => item.code !== payload.code);
+          localStorage.setItem('inventory_items', JSON.stringify(ITEMS));
+          break;
+          
+        case 'move':
+          if (!payload.code || payload.qty === undefined) throw new Error('بيانات غير مكتملة');
+          const itemIndex = ITEMS.findIndex(item => item.code === payload.code);
+          if (itemIndex === -1) throw new Error('لم يتم العثور على الصنف');
+          
+          const newQty = ITEMS[itemIndex].qty + payload.qty;
+          if (newQty < 0) throw new Error('الكمية غير كافية');
+          
+          ITEMS[itemIndex].qty = newQty;
+          localStorage.setItem('inventory_items', JSON.stringify(ITEMS));
+          
+          // تسجيل الحركة
+          const activities = JSON.parse(localStorage.getItem('inventory_activities') || '[]');
+          activities.unshift({
+            type: payload.qty > 0 ? 'in' : 'out',
+            item: payload.code,
+            qty: Math.abs(payload.qty),
+            note: payload.note || '',
+            date: new Date().toLocaleString('ar-DZ')
+          });
+          localStorage.setItem('inventory_activities', JSON.stringify(activities.slice(0, 50)));
+          break;
+          
+        case 'list':
+          // البيانات سيتم إرجاعها من المتغير ITEMS
+          break;
+      }
+      
+      return { success: true };
+    }
+
+    // اختبار اتصال Google Apps Script
+    async function testConnection() {
+      if (!SCRIPT_URL || SCRIPT_URL.includes('https://script.google.com/macros/s/AKfycbyoW8BP73cMHF29DxsV3XNnNYTrZVCDaQpQQswr3bixkaUhHLGCn6TcICek_GODZesE/exec')) {
+        return false;
+      }
+      
+      try {
+        const response = await fetch(SCRIPT_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'list' }),
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        return response.ok;
+      } catch (e) {
+        console.error('Connection test failed:', e);
+        return false;
+      }
+    }
+
+    // تحديث حالة الاتصال في الواجهة
+    function updateConnectionStatus(connected) {
+      const statusElement = document.getElementById('connectionStatus');
+      if (!statusElement) return;
+      
+      if (connected) {
+        statusElement.innerHTML = '🟢 متصل بـ Google Sheets';
+        statusElement.style.color = 'green';
+      } else {
+        statusElement.innerHTML = '🔴 غير متصل - العمل في الوضع المحلي';
+        statusElement.style.color = 'red';
+      }
+    }
+
+    // تحميل البيانات من التخزين المحلي
+    function loadLocalData() {
+      const savedItems = localStorage.getItem('inventory_items');
+      if (savedItems) {
+        ITEMS = JSON.parse(savedItems);
+      } else {
+        // استخدام البيانات التجريبية إذا لم توجد بيانات محفوظة
+        ITEMS = sampleData;
+        localStorage.setItem('inventory_items', JSON.stringify(ITEMS));
+      }
+      
+      const stats = calculateStats(ITEMS);
+      const cats = [...new Set(ITEMS.map(item => item.category).filter(Boolean))];
+      
+      renderStats(stats);
+      renderCats(cats);
+      renderRows();
+      updateCharts();
+      renderAlerts();
+      renderRecentActivities();
+    }
+
     // تحميل البيانات والإحصاءات
-    async function loadAll(){
-      try{
-        // محاولة تحميل البيانات من الخادم إذا كان متصلاً
-        if (SCRIPT_URL && CONNECTED) {
+    async function loadAll() {
+      toggleLoader(true);
+      
+      try {
+        // محاولة الاتصال بـ Google Sheets أولاً
+        const isConnected = await testConnection();
+        updateConnectionStatus(isConnected);
+        
+        if (isConnected) {
           const { items, stats, cats } = await api("list");
           ITEMS = items || [];
-          renderStats(stats||{});
-          renderCats(cats||[]);
+          
+          // حفظ نسخة محلية للاستخدام دون اتصال
+          localStorage.setItem('inventory_items', JSON.stringify(ITEMS));
+          
+          renderStats(stats || {});
+          renderCats(cats || []);
         } else {
-          // استخدام البيانات التجريبية
-          ITEMS = sampleData;
-          const stats = calculateStats(ITEMS);
-          const cats = [...new Set(ITEMS.map(item => item.category))];
-          renderStats(stats);
-          renderCats(cats);
+          // استخدام البيانات المحلية
+          loadLocalData();
         }
         
         renderRows();
         updateCharts();
         renderAlerts();
         renderRecentActivities();
-      }catch(e){ 
-        showError("تعذّر تحميل البيانات: " + e.message); 
-        // استخدام البيانات التجريبية في حالة الخطأ
-        ITEMS = sampleData;
-        const stats = calculateStats(ITEMS);
-        const cats = [...new Set(ITEMS.map(item => item.category))];
-        renderStats(stats);
-        renderCats(cats);
-        renderRows();
-        updateCharts();
-        renderAlerts();
-        renderRecentActivities();
+      } catch (e) {
+        console.error("تعذّر تحميل البيانات: ", e);
+        
+        // استخدام البيانات المحلية في حالة الخطأ
+        loadLocalData();
+        updateConnectionStatus(false);
+        
+        showError("تعذّر الاتصال بالخادم. يتم العمل في الوضع المحلي: " + e.message);
+      } finally {
+        toggleLoader(false);
       }
     }
 
@@ -487,6 +662,7 @@
             }
             ITEMS.push(payload);
           }
+          localStorage.setItem('inventory_items', JSON.stringify(ITEMS));
         }
         
         await loadAll();
@@ -504,6 +680,7 @@
         } else {
           // حذف محلي
           ITEMS = ITEMS.filter(item => item.code !== decodeURIComponent(code));
+          localStorage.setItem('inventory_items', JSON.stringify(ITEMS));
         }
         
         await loadAll();
@@ -538,8 +715,10 @@
               item.qty = Math.max(0, (Number(item.qty) || 0) - Math.abs(qty));
             }
             
+            localStorage.setItem('inventory_items', JSON.stringify(ITEMS));
+            
             // تسجيل الحركة في النشاطات
-            const activities = JSON.parse(localStorage.getItem('inventory_activities') || []);
+            const activities = JSON.parse(localStorage.getItem('inventory_activities') || '[]');
             activities.unshift({
               type: MOVE_TYPE,
               item: code,
@@ -681,7 +860,7 @@
     }
 
     // الاتصال بـ Google Sheets
-    function connectToGoogleSheets() {
+    async function connectToGoogleSheets() {
       const url = document.getElementById('scriptUrl').value.trim();
       if (!url) {
         return showError('يرجى إدخال رابط Web App');
@@ -690,13 +869,90 @@
       // حفظ الرابط في localStorage
       localStorage.setItem('inventory_script_url', url);
       SCRIPT_URL = url;
-      CONNECTED = true;
       
-      document.getElementById('connectionStatus').textContent = '🟢 متصل بـ Google Sheets';
-      document.getElementById('connectionStatus').style.color = 'green';
+      toggleLoader(true);
+      try {
+        const isConnected = await testConnection();
+        if (isConnected) {
+          CONNECTED = true;
+          updateConnectionStatus(true);
+          showSuccess('تم الاتصال بنجاح بـ Google Sheets');
+          await loadAll();
+        } else {
+          throw new Error('فشل الاتصال بـ Google Sheets');
+        }
+      } catch (e) {
+        showError('تعذر الاتصال: ' + e.message);
+        updateConnectionStatus(false);
+      } finally {
+        toggleLoader(false);
+      }
+    }
+
+    // تصدير البيانات المحلية
+    function exportLocalData() {
+      const data = {
+        items: ITEMS,
+        activities: JSON.parse(localStorage.getItem('inventory_activities') || []
+      };
       
-      showSuccess('تم الاتصال بنجاح');
+      const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'inventory_backup.json';
+      a.click();
+      URL.revokeObjectURL(a.href);
+      
+      showSuccess('تم تصدير البيانات المحلية بنجاح');
+    }
+
+    // استيراد البيانات المحلية
+    function importLocalData() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json';
+      
+      input.onchange = function(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          try {
+            const data = JSON.parse(e.target.result);
+            
+            if (data.items) {
+              ITEMS = data.items;
+              localStorage.setItem('inventory_items', JSON.stringify(ITEMS));
+            }
+            
+            if (data.activities) {
+              localStorage.setItem('inventory_activities', JSON.stringify(data.activities));
+            }
+            
+            loadAll();
+            showSuccess('تم استيراد البيانات بنجاح');
+          } catch (e) {
+            showError('فشل استيراد البيانات: ' + e.message);
+          }
+        };
+        
+        reader.readAsText(file);
+      };
+      
+      input.click();
+    }
+
+    // مسح البيانات المحلية
+    function clearLocalData() {
+      if (!confirm('هل أنت متأكد من مسح جميع البيانات المحلية؟ لا يمكن التراجع عن هذا الإجراء.')) return;
+      
+      localStorage.removeItem('inventory_items');
+      localStorage.removeItem('inventory_activities');
+      ITEMS = [];
+      
       loadAll();
+      showSuccess('تم مسح البيانات المحلية بنجاح');
     }
 
     // أدوات عامة
@@ -716,6 +972,9 @@
     document.getElementById('btnConnect').onclick = connectToGoogleSheets;
     document.getElementById('helpLink').onclick = (e)=>{ e.preventDefault(); showModal('modalHelp', true); };
     document.getElementById('copyScriptLink').onclick = (e)=>{ e.preventDefault(); alert('سيتم توفير الكود البرمجي في دليل الإعداد'); };
+    document.getElementById('btnExportLocal').onclick = exportLocalData;
+    document.getElementById('btnImportLocal').onclick = importLocalData;
+    document.getElementById('btnClearLocal').onclick = clearLocalData;
     
     document.querySelectorAll('[data-close]').forEach(el=>el.onclick=()=>{
       el.closest('.modal').classList.remove('show');
