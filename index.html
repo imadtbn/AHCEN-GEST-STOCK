@@ -10,116 +10,578 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    :root{
-      --primary:#2e7d32; --primary-dark:#1b5e20; --accent:#81c784;
-      --bg:#f5f6f4; --card:#fff; --muted:#6b6b6b; --danger:#c62828; --warning:#ef6c00;
-      --radius:14px; --info:#1565c0; --purple:#7b1fa2;
+    :root {
+      --primary: #2e7d32;
+      --primary-dark: #1b5e20;
+      --accent: #81c784;
+      --bg: #f5f6f4;
+      --card: #fff;
+      --muted: #6b6b6b;
+      --danger: #c62828;
+      --warning: #ef6c00;
+      --radius: 14px;
+      --info: #1565c0;
+      --purple: #7b1fa2;
     }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{margin:0;font-family:'Tajawal',Arial,sans-serif;background:var(--bg);color:#111}
-    a{color:var(--primary)}
-    .container{max-width:1200px;margin:24px auto;padding:0 16px}
-    header{display:flex;gap:16px;align-items:center;justify-content:space-between;margin-bottom:12px}
-    .brand{display:flex;align-items:center;gap:12px}
-    .logo{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--primary),var(--accent));display:grid;place-items:center;color:#fff;font-weight:700}
-    h1{margin:0;font-size:22px}
-    .actions{display:flex;gap:8px;flex-wrap:wrap}
-    button, .btn{border:none;background:var(--primary);color:#fff;padding:10px 14px;border-radius:12px;cursor:pointer;font-weight:600;transition:all 0.2s}
-    button:hover, .btn:hover{opacity:0.9;transform:translateY(-2px)}
-    button.secondary{background:#e8f5e9;color:#185a1b}
-    button.warning{background:var(--warning)}
-    button.danger{background:var(--danger)}
-    button.info{background:var(--info)}
-    button.purple{background:var(--purple)}
-    button:disabled{opacity:.6;cursor:not-allowed}.grid{display:grid;gap:16px}
-    .cards{grid-template-columns:repeat(4,minmax(0,1fr))}
-    @media(max-width:992px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
-    @media(max-width:560px){.cards{grid-template-columns:1fr}}
 
-    .card{background:var(--card);border-radius:var(--radius);padding:16px;box-shadow:0 6px 20px rgba(0,0,0,.05)}
-    .metric{display:flex;align-items:center;justify-content:space-between}
-    .metric .value{font-weight:700;font-size:22px}
-    .metric .label{color:var(--muted)}
+    * {
+      box-sizing: border-box;
+    }
 
-    .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin:12px 0}
-    .toolbar .left, .toolbar .right{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-    input, select{height:40px;border:1px solid #e7e7e7;border-radius:12px;padding:0 12px;background:#fff;font-family:inherit}
-    input:focus, select:focus{outline:2px solid #cde9ce;border-color:#cde9ce}
-    input[type="number"]{direction:ltr;text-align:right}
+    html, body {
+      height: 100%;
+    }
 
-    .table-wrap{overflow:auto;border:1px solid #eee;border-radius:16px}
-    table{width:100%;border-collapse:collapse;min-width:980px}
-    th,td{padding:12px;border-bottom:1px solid #f3f3f3;background:#fff;vertical-align:middle}
-    th{background:#fafafa;color:#333}
-    tbody tr:hover{background:#fafdfb}
-    .pill{padding:4px 10px;border-radius:999px;font-size:12px;display:inline-block}
-    .pill.low{background:#ffebee;color:#b71c1c}
-    .pill.ok{background:#e8f5e9;color:#1b5e20}
+    body {
+      margin: 0;
+      font-family: 'Tajawal', Arial, sans-serif;
+      background: var(--bg);
+      color: #111;
+      line-height: 1.6;
+    }
 
-    .badge{background:#e3f2fd;color:#0d47a1;border-radius:999px;padding:2px 10px;font-size:12px}
+    a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    header {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo {
+      width: 50px;
+      height: 50px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-weight: 700;
+      font-size: 24px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 24px;
+      color: var(--primary-dark);
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    button, .btn {
+      border: none;
+      background: var(--primary);
+      color: #fff;
+      padding: 12px 18px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    button:hover, .btn:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    button.secondary {
+      background: #e8f5e9;
+      color: #185a1b;
+    }
+
+    button.warning {
+      background: var(--warning);
+      color: white;
+    }
+
+    button.danger {
+      background: var(--danger);
+      color: white;
+    }
+
+    button.info {
+      background: var(--info);
+      color: white;
+    }
+
+    button.purple {
+      background: var(--purple);
+      color: white;
+    }
+
+    button:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+    }
+
+    .grid {
+      display: grid;
+      gap: 20px;
+    }
+
+    .cards {
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: 0 6px 20px rgba(0,0,0,.05);
+      transition: transform 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+    }
+
+    .metric {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .metric .value {
+      font-weight: 700;
+      font-size: 28px;
+      color: var(--primary);
+    }
+
+    .metric .label {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      margin: 20px 0;
+      padding: 15px;
+      background: white;
+      border-radius: var(--radius);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    .toolbar .left, .toolbar .right {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    input, select {
+      height: 45px;
+      border: 1px solid #e7e7e7;
+      border-radius: 12px;
+      padding: 0 15px;
+      background: #fff;
+      font-family: inherit;
+      font-size: 16px;
+      min-width: 200px;
+    }
+
+    input:focus, select:focus {
+      outline: 2px solid #cde9ce;
+      border-color: #cde9ce;
+    }
+
+    input[type="number"] {
+      direction: ltr;
+      text-align: right;
+    }
+
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid #eee;
+      border-radius: 16px;
+      margin: 20px 0;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 1000px;
+    }
+
+    th, td {
+      padding: 15px;
+      border-bottom: 1px solid #f3f3f3;
+      background: #fff;
+      vertical-align: middle;
+      text-align: center;
+    }
+
+    th {
+      background: #fafafa;
+      color: #333;
+      font-weight: 600;
+      position: sticky;
+      top: 0;
+      box-shadow: 0 2px 3px rgba(0,0,0,0.05);
+    }
+
+    tbody tr:hover {
+      background: #fafdfb !important;
+    }
+
+    tbody tr:nth-child(even) {
+      background: #f9f9f9;
+    }
+
+    .pill {
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 14px;
+      display: inline-block;
+      font-weight: 500;
+    }
+
+    .pill.low {
+      background: #ffebee;
+      color: #b71c1c;
+    }
+
+    .pill.ok {
+      background: #e8f5e9;
+      color: #1b5e20;
+    }
+
+    .badge {
+      background: #e3f2fd;
+      color: #0d47a1;
+      border-radius: 999px;
+      padding: 4px 12px;
+      font-size: 14px;
+      font-weight: 500;
+    }
 
     /* Modal */
-    .modal{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;padding:16px;z-index:50}
-    .modal.show{display:flex}
-    .modal .box{background:#fff;max-width:720px;width:100%;border-radius:18px;padding:16px;max-height:90vh;overflow-y:auto}
-    .box header{margin-bottom:8px}
-    .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-    @media(max-width:560px){.form-grid{grid-template-columns:1fr}}
-    .box footer{display:flex;gap:8px;justify-content:flex-start;margin-top:10px}
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.35);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 1000;
+      animation: fadeIn 0.3s ease;
+    }
 
-    .hint{color:var(--muted);font-size:12px}
-    .empty{padding:18px;color:var(--muted);text-align:center}
+    .modal.show {
+      display: flex;
+    }
+
+    .modal .box {
+      background: #fff;
+      max-width: 800px;
+      width: 100%;
+      border-radius: 18px;
+      padding: 25px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      animation: scaleIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes scaleIn {
+      from { transform: scale(0.9); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .box header {
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 15px;
+    }
+
+    .form-grid > div {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-grid label {
+      font-weight: 600;
+      color: #333;
+    }
+
+    .box footer {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-start;
+      margin-top: 20px;
+      padding-top: 15px;
+      border-top: 1px solid #eee;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .empty {
+      padding: 30px;
+      color: var(--muted);
+      text-align: center;
+      font-style: italic;
+    }
 
     /* الرسوم البيانية */
-    .charts-container {display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;}
-    .chart-card {background: #fff; border-radius: var(--radius); padding: 16px; box-shadow: 0 6px 20px rgba(0,0,0,.05);}
-    @media(max-width: 992px) {.charts-container {grid-template-columns: 1fr;}}
+    .charts-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .chart-card {
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: 0 6px 20px rgba(0,0,0,.05);
+    }
+
+    .chart-card h3 {
+      margin-top: 0;
+      margin-bottom: 15px;
+      color: var(--primary-dark);
+    }
 
     /* التنبيهات */
-    .alerts-container {margin: 16px 0;}
-    .alert {padding: 12px 16px; border-radius: var(--radius); margin-bottom: 8px; display: flex; align-items: center; gap: 12px;}
-    .alert.warning {background: #fff8e1; border-right: 4px solid var(--warning);}
-    .alert.danger {background: #ffebee; border-right: 4px solid var(--danger);}
-    .alert.info {background: #e3f2fd; border-right: 4px solid var(--info);}
+    .alerts-container {
+      margin: 20px 0;
+    }
+
+    .alert {
+      padding: 15px 20px;
+      border-radius: var(--radius);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .alert.warning {
+      background: #fff8e1;
+      border-right: 4px solid var(--warning);
+      color: #7d4e00;
+    }
+
+    .alert.danger {
+      background: #ffebee;
+      border-right: 4px solid var(--danger);
+      color: #c62828;
+    }
+
+    .alert.info {
+      background: #e3f2fd;
+      border-right: 4px solid var(--info);
+      color: #1565c0;
+    }
 
     /* مؤشر التحميل */
-    .loader {display: none; position: fixed; top: 0; left: 0; width: 100%; height: 3px; background: #f1f1f1; z-index: 9999;}
-    .loader::before {content: ''; position: absolute; height: 3px; width: 50%; background: var(--primary); animation: loading 1.5s ease-in-out infinite;}
+    .loader {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: #f1f1f1;
+      z-index: 9999;
+    }
+
+    .loader::before {
+      content: '';
+      position: absolute;
+      height: 4px;
+      width: 50%;
+      background: var(--primary);
+      animation: loading 1.5s ease-in-out infinite;
+    }
 
     @keyframes loading {
-      0% {left: -50%;}
-      100% {left: 100%;}
+      0% { left: -50%; }
+      100% { left: 100%; }
     }
 
     /* الحركات الحديثة */
-    .recent-activity {margin-top: 24px;}
-    .activity-item {display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #eee;}
-    .activity-item:last-child {border-bottom: none;}
-    .activity-type {display: flex; align-items: center; gap: 8px;}
-    .activity-in {color: var(--primary);}
-    .activity-out {color: var(--danger);}
-    .activity-date {color: var(--muted); font-size: 0.9em;}
+    .recent-activity {
+      margin-top: 30px;
+    }
+
+    .activity-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 15px 0;
+      border-bottom: 1px solid #eee;
+      align-items: center;
+    }
+
+    .activity-item:last-child {
+      border-bottom: none;
+    }
+
+    .activity-type {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .activity-in {
+      color: var(--primary);
+    }
+
+    .activity-out {
+      color: var(--danger);
+    }
+
+    .activity-date {
+      color: var(--muted);
+      font-size: 14px;
+    }
 
     /* إعدادات الاتصال */
-    .connection-settings {background: #e8f5e9; padding: 16px; border-radius: var(--radius); margin-bottom: 20px;}
-    .connection-settings h3 {margin-top: 0;}
-    .connection-form {display: grid; grid-template-columns: 1fr auto; gap: 10px;}
-    @media(max-width: 560px) {.connection-form {grid-template-columns: 1fr;}}
+    .connection-settings {
+      background: #e8f5e9;
+      padding: 20px;
+      border-radius: var(--radius);
+      margin-bottom: 25px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    .connection-settings h3 {
+      margin-top: 0;
+      color: var(--primary-dark);
+    }
+
+    .connection-form {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 15px;
+      margin-bottom: 15px;
+    }
 
     /* إدارة البيانات المحلية */
-    .local-data-actions {display: flex; gap: 8px; margin: 16px 0; flex-wrap: wrap;}
-    
-    /* التبويبات */
-    .tabs {display: flex; gap: 8px; margin-bottom: 16px;}
-    .tab {padding: 10px 16px; background: #e0e0e0; border-radius: var(--radius); cursor: pointer;}
-    .tab.active {background: var(--primary); color: white;}
+    .local-data-actions {
+      display: flex;
+      gap: 12px;
+      margin: 20px 0;
+      flex-wrap: wrap;
+    }
     
     /* رسائل الحالة */
-    .status-message {padding: 10px; border-radius: var(--radius); margin: 10px 0; text-align: center;}
-    .status-success {background: #e8f5e9; color: #2e7d32;}
-    .status-error {background: #ffebee; color: #c62828;}
-    .status-warning {background: #fff8e1; color: #ef6c00;}
+    .status-message {
+      padding: 15px;
+      border-radius: var(--radius);
+      margin: 15px 0;
+      text-align: center;
+      font-weight: 500;
+    }
+    
+    .status-success {
+      background: #e8f5e9;
+      color: #2e7d32;
+      border: 1px solid #a5d6a7;
+    }
+    
+    .status-error {
+      background: #ffebee;
+      color: #c62828;
+      border: 1px solid #ef9a9a;
+    }
+    
+    .status-warning {
+      background: #fff8e1;
+      color: #ef6c00;
+      border: 1px solid #ffcc80;
+    }
+
+    /* تحسينات للجوال */
+    @media (max-width: 768px) {
+      .container {
+        padding: 15px;
+      }
+      
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .actions {
+        width: 100%;
+        justify-content: center;
+      }
+      
+      .connection-form {
+        grid-template-columns: 1fr;
+      }
+      
+      .toolbar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .toolbar .left, .toolbar .right {
+        width: 100%;
+      }
+      
+      input, select {
+        min-width: 100%;
+      }
+      
+      .charts-container {
+        grid-template-columns: 1fr;
+      }
+      
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
@@ -134,10 +596,10 @@
         </div>
       </div>
       <div class="actions">
-        <button id="btnAdd">➕ إضافة صنف</button>
-        <button class="secondary" id="btnIn">⬆️ إدخال مخزوني</button>
-        <button class="secondary" id="btnOut">⬇️ إخراج مخزوني</button>
-        <button class="warning" id="btnRefresh">↻ تحديث</button>
+        <button id="btnAdd"><i class="fas fa-plus"></i> إضافة صنف</button>
+        <button class="secondary" id="btnIn"><i class="fas fa-arrow-up"></i> إدخال مخزوني</button>
+        <button class="secondary" id="btnOut"><i class="fas fa-arrow-down"></i> إخراج مخزوني</button>
+        <button class="warning" id="btnRefresh"><i class="fas fa-sync-alt"></i> تحديث</button>
       </div>
     </header>
     
@@ -147,36 +609,48 @@
       <div class="connection-form">
         <input type="text" id="scriptUrl" placeholder="رابط Web App من Google Apps Script" 
                value="https://script.google.com/macros/s/AKfycbyoW8BP73cMHF29DxsV3XNnNYTrZVCDaQpQQswr3bixkaUhHLGCn6TcICek_GODZesE/exec" />
-        <button id="btnConnect">اتصال</button>
+        <button id="btnConnect"><i class="fas fa-plug"></i> اتصال</button>
       </div>
       <div class="hint">تم تعبئة الرابط تلقائياً. انقر على "اتصال" للربط مع Google Sheets.</div>
     </div>
     
     <!-- إدارة البيانات المحلية -->
     <div class="local-data-actions">
-      <button class="info" id="btnExportLocal">💾 تصدير البيانات المحلية</button>
-      <button class="info" id="btnImportLocal">📤 استيراد إلى البيانات المحلية</button>
-      <button class="danger" id="btnClearLocal">🗑️ مسح البيانات المحلية</button>
+      <button class="info" id="btnExportLocal"><i class="fas fa-download"></i> تصدير البيانات المحلية</button>
+      <button class="info" id="btnImportLocal"><i class="fas fa-upload"></i> استيراد إلى البيانات المحلية</button>
+      <button class="danger" id="btnClearLocal"><i class="fas fa-trash"></i> مسح البيانات المحلية</button>
     </div>
     
     <!-- البطاقات -->
     <section class="grid cards">
-      <div class="card metric"><div>
-        <div class="label">عدد الأصناف</div>
-        <div class="value" id="m_items">0</div>
-      </div><span class="badge">المخزن</span></div>
-      <div class="card metric"><div>
-        <div class="label">إجمالي الكمية</div>
-        <div class="value" id="m_qty">0</div>
-      </div><span class="badge">الوحدات</span></div>
-      <div class="card metric"><div>
-        <div class="label">قيمة المخزون التقديرية</div>
-        <div class="value" id="m_value">0 دج</div>
-      </div><span class="badge">دج</span></div>
-      <div class="card metric"><div>
-        <div class="label">أصناف تحت الحد الأدنى</div>
-        <div class="value" id="m_low">0</div>
-      </div><span class="badge">تنبيه</span></div>
+      <div class="card metric">
+        <div>
+          <div class="label">عدد الأصناف</div>
+          <div class="value" id="m_items">0</div>
+        </div>
+        <span class="badge">المخزن</span>
+      </div>
+      <div class="card metric">
+        <div>
+          <div class="label">إجمالي الكمية</div>
+          <div class="value" id="m_qty">0</div>
+        </div>
+        <span class="badge">الوحدات</span>
+      </div>
+      <div class="card metric">
+        <div>
+          <div class="label">قيمة المخزون التقديرية</div>
+          <div class="value" id="m_value">0 دج</div>
+        </div>
+        <span class="badge">دج</span>
+      </div>
+      <div class="card metric">
+        <div>
+          <div class="label">أصناف تحت الحد الأدنى</div>
+          <div class="value" id="m_low">0</div>
+        </div>
+        <span class="badge">تنبيه</span>
+      </div>
     </section>
     
     <!-- الرسوم البيانية -->
@@ -203,7 +677,9 @@
     <div class="toolbar card">
       <div class="left">
         <input id="search" placeholder="🔎 بحث بالاسم، الرقم، المورد، أو الفئة"/>
-        <select id="filterCat"><option value="">كل الفئات</option></select>
+        <select id="filterCat">
+          <option value="">كل الفئات</option>
+        </select>
         <select id="filterStatus">
           <option value="">الكل</option>
           <option value="low">تحت الحد الأدنى</option>
@@ -213,7 +689,7 @@
       <div class="right">
         <button class="info" id="btnCharts"><i class="fas fa-chart-bar"></i> عرض الرسوم</button>
         <button class="purple" id="btnReports"><i class="fas fa-file-alt"></i> تقارير</button>
-        <button class="secondary" id="btnExport">⬇️ تصدير CSV</button>
+        <button class="secondary" id="btnExport"><i class="fas fa-file-export"></i> تصدير CSV</button>
       </div>
     </div>
 
@@ -236,7 +712,11 @@
             <th>خيارات</th>
           </tr>
         </thead>
-        <tbody id="rows"><tr><td colspan="12" class="empty">لا توجد بيانات بعد…</td></tr></tbody>
+        <tbody id="rows">
+          <tr>
+            <td colspan="12" class="empty">لا توجد بيانات بعد…</td>
+          </tr>
+        </tbody>
       </table>
     </div>
 
@@ -247,7 +727,6 @@
         <div class="empty">لا توجد حركات حديثة</div>
       </div>
     </div>
-
   </div>
 
   <!-- نافذة إضافة/تعديل صنف -->
@@ -257,18 +736,42 @@
         <h3 id="formTitle">إضافة صنف</h3>
       </header>
       <div class="form-grid">
-        <div><label>رقم الصنف</label><input id="f_code" placeholder="مثال: BR-001"></div>
-        <div><label>اسم القطعة</label><input id="f_name" placeholder="مثال: بريك أمامي"></div>
-        <div><label>الفئة</label><input id="f_cat" placeholder="فرامل/فلتر/محرك…"></div>
-        <div><label>الموقع</label><input id="f_loc" placeholder="رف A1"></div>
-        <div><label>المورد</label><input id="f_supplier" placeholder="شركة الموردين"></div>
-        <div><label>الحد الأدنى</label><input type="number" id="f_min" value="0"></div>
-        <div><label>الكمية</label><input type="number" id="f_qty" value="0"></div>
-        <div><label>سعر الوحدة (دج)</label><input type="number" id="f_price" value="0"></div>
+        <div>
+          <label for="f_code">رقم الصنف</label>
+          <input id="f_code" placeholder="مثال: BR-001">
+        </div>
+        <div>
+          <label for="f_name">اسم القطعة</label>
+          <input id="f_name" placeholder="مثال: بريك أمامي">
+        </div>
+        <div>
+          <label for="f_cat">الفئة</label>
+          <input id="f_cat" placeholder="فرامل/فلتر/محرك…">
+        </div>
+        <div>
+          <label for="f_loc">الموقع</label>
+          <input id="f_loc" placeholder="رف A1">
+        </div>
+        <div>
+          <label for="f_supplier">المورد</label>
+          <input id="f_supplier" placeholder="شركة الموردين">
+        </div>
+        <div>
+          <label for="f_min">الحد الأدنى</label>
+          <input type="number" id="f_min" value="0" min="0">
+        </div>
+        <div>
+          <label for="f_qty">الكمية</label>
+          <input type="number" id="f_qty" value="0" min="0">
+        </div>
+        <div>
+          <label for="f_price">سعر الوحدة (دج)</label>
+          <input type="number" id="f_price" value="0" min="0" step="0.01">
+        </div>
       </div>
       <footer>
-        <button id="saveItem">💾 حفظ</button>
-        <button class="secondary" data-close>إلغاء</button>
+        <button id="saveItem"><i class="fas fa-save"></i> حفظ</button>
+        <button class="secondary" data-close><i class="fas fa-times"></i> إلغاء</button>
       </footer>
     </div>
   </div>
@@ -280,28 +783,35 @@
         <h3 id="moveTitle">حركة مخزونية</h3>
       </header>
       <div class="form-grid">
-        <div><label>رقم الصنف</label><input id="mv_code" placeholder="BR-001"></div>
-        <div><label>الكمية</label><input type="number" id="mv_qty" value="1"></div>
-        <div style="grid-column:1/-1"><label>ملاحظة</label><input id="mv_note" placeholder="سبب الحركة (فاتورة، مرتجع…)"></div>
+        <div>
+          <label for="mv_code">رقم الصنف</label>
+          <input id="mv_code" placeholder="BR-001">
+        </div>
+        <div>
+          <label for="mv_qty">الكمية</label>
+          <input type="number" id="mv_qty" value="1" min="1">
+        </div>
+        <div style="grid-column:1/-1">
+          <label for="mv_note">ملاحظة</label>
+          <input id="mv_note" placeholder="سبب الحركة (فاتورة، مرتجع…)">
+        </div>
       </div>
       <footer>
-        <button id="applyMove">تطبيق</button>
-        <button class="secondary" data-close>إلغاء</button>
+        <button id="applyMove"><i class="fas fa-check"></i> تطبيق</button>
+        <button class="secondary" data-close><i class="fas fa-times"></i> إلغاء</button>
       </footer>
     </div>
   </div>
 
   <script>
-    /* ======== إعدادات الربط مع Google Apps Script ======== */
-    let SCRIPT_URL = localStorage.getItem('inventory_script_url') || "https://script.google.com/macros/s/AKfycbyoW8BP73cMHF29DxsV3XNnNYTrZVCDaQpQQswr3bixkaUhHLGCn6TcICek_GODZesE/exec";
+    // ======== المتغيرات العامة ========
+    let SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyoW8BP73cMHF29DxsV3XNnNYTrZVCDaQpQQswr3bixkaUhHLGCn6TcICek_GODZesE/exec";
     let CONNECTED = false;
-
-    /* ======== حالة التطبيق ======== */
-    let ITEMS = []; // الأصناف
-    let FILTER = { q:"", cat:"", status:"" };
+    let ITEMS = [];
+    let FILTER = { q: "", cat: "", status: "" };
     let categoryChart, statusChart;
 
-    // بيانات تجريبية للعرض
+    // بيانات تجريبية
     const sampleData = [
       { code: "BRK-001", name: "بريك أمامي", category: "فرامل", location: "رف A1", supplier: "شركة الفرامل", min: 5, qty: 3, price: 2500 },
       { code: "OIL-002", name: "زيت محرك", category: "زيوت", location: "رف B2", supplier: "شركة الزيوت", min: 10, qty: 15, price: 800 },
@@ -310,183 +820,98 @@
       { code: "SPK-005", name: "شمعة احتراق", category: "إلكترونيات", location: "رف E5", supplier: "شركة الإلكترونيات", min: 12, qty: 20, price: 400 }
     ];
 
-    // مساعد لطلبات الشبكة
-    async function api(action, payload = {}) {
-      if (!SCRIPT_URL || SCRIPT_URL.includes('PASTE_WEB_APP_URL_HERE')) {
-        // العمل في الوضع المحلي بدون اتصال
-        await simulateApiCall(action, payload);
-        return { success: true };
-      }
+    // ======== تهيئة الصفحة ========
+    document.addEventListener('DOMContentLoaded', function() {
+      initializeApp();
+      setupEventListeners();
+      loadAll();
+    });
 
+    // ======== وظائف التهيئة ========
+    function initializeApp() {
+      // تعيين رابط السكريبت في حقل الإدخال
+      document.getElementById('scriptUrl').value = SCRIPT_URL;
+      
+      // تحميل البيانات المحلية إذا وجدت
+      const savedItems = localStorage.getItem('inventory_items');
+      if (savedItems) {
+        ITEMS = JSON.parse(savedItems);
+      } else {
+        ITEMS = sampleData;
+        localStorage.setItem('inventory_items', JSON.stringify(ITEMS));
+      }
+    }
+
+    function setupEventListeners() {
+      // الأزرار الرئيسية
+      document.getElementById('btnAdd').addEventListener('click', () => openItem());
+      document.getElementById('btnIn').addEventListener('click', () => openMove('in'));
+      document.getElementById('btnOut').addEventListener('click', () => openMove('out'));
+      document.getElementById('btnRefresh').addEventListener('click', loadAll);
+      document.getElementById('btnExport').addEventListener('click', exportCSV);
+      document.getElementById('btnConnect').addEventListener('click', connectToGoogleSheets);
+      
+      // إدارة البيانات المحلية
+      document.getElementById('btnExportLocal').addEventListener('click', exportLocalData);
+      document.getElementById('btnImportLocal').addEventListener('click', importLocalData);
+      document.getElementById('btnClearLocal').addEventListener('click', clearLocalData);
+      
+      // النماذج
+      document.getElementById('saveItem').addEventListener('click', saveItem);
+      document.getElementById('applyMove').addEventListener('click', applyMove);
+      
+      // إغلاق النماذج
+      document.querySelectorAll('[data-close]').forEach(el => {
+        el.addEventListener('click', () => {
+          el.closest('.modal').classList.remove('show');
+        });
+      });
+      
+      // البحث والتصفية
+      document.getElementById('search').addEventListener('input', e => {
+        FILTER.q = e.target.value;
+        renderRows();
+      });
+      
+      document.getElementById('filterCat').addEventListener('change', e => {
+        FILTER.cat = e.target.value;
+        renderRows();
+      });
+      
+      document.getElementById('filterStatus').addEventListener('change', e => {
+        FILTER.status = e.target.value;
+        renderRows();
+      });
+    }
+
+    // ======== وظائف API ========
+    async function api(action, payload = {}) {
       toggleLoader(true);
       try {
         const body = JSON.stringify({ action, ...payload });
         const res = await fetch(SCRIPT_URL, {
           method: "POST",
           body,
-          headers: {
-            "Content-Type": "application/json"
-          }
+          headers: { "Content-Type": "application/json" }
         });
         
-        if (!res.ok) {
-          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-        }
+        if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
         
         const data = await res.json();
-        
-        if (data.error) {
-          throw new Error(data.error);
-        }
+        if (data.error) throw new Error(data.error);
         
         return data;
       } catch (e) {
         console.error("API Error:", e);
-        
-        // المحاولة مرة أخرى بعد تأخير قصير (لمحاولة واحدة فقط)
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        try {
-          const body = JSON.stringify({ action, ...payload });
-          const res = await fetch(SCRIPT_URL, {
-            method: "POST",
-            body,
-            headers: {
-              "Content-Type": "application/json"
-            }
-          });
-          
-          if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-          return await res.json();
-        } catch (retryError) {
-          // إذا فشلت المحاولة الثانية، استخدم البيانات المحلية
-          await simulateApiCall(action, payload);
-          return { success: true };
-        }
+        throw new Error("فشل في الاتصال بالخادم: " + e.message);
       } finally {
         toggleLoader(false);
       }
     }
 
-    // محاكاة API للعمل دون اتصال
-    async function simulateApiCall(action, payload) {
-      await new Promise(resolve => setTimeout(resolve, 300)); // محاكاة التأخير
-      
-      switch (action) {
-        case 'add':
-          if (!payload.item) throw new Error('بيانات غير مكتملة');
-          if (ITEMS.some(item => item.code === payload.item.code)) {
-            throw new Error('رقم الصنف موجود مسبقاً');
-          }
-          ITEMS.push(payload.item);
-          localStorage.setItem('inventory_items', JSON.stringify(ITEMS));
-          break;
-          
-        case 'update':
-          if (!payload.item) throw new Error('بيانات غير مكتملة');
-          const index = ITEMS.findIndex(item => item.code === payload.item.code);
-          if (index === -1) throw new Error('لم يتم العثور على الصنف');
-          ITEMS[index] = payload.item;
-          localStorage.setItem('inventory_items', JSON.stringify(ITEMS));
-          break;
-          
-        case 'delete':
-          if (!payload.code) throw new Error('بيانات غير مكتملة');
-          ITEMS = ITEMS.filter(item => item.code !== payload.code);
-          localStorage.setItem('inventory_items', JSON.stringify(ITEMS));
-          break;
-          
-        case 'move':
-          if (!payload.code || payload.qty === undefined) throw new Error('بيانات غير مكتملة');
-          const itemIndex = ITEMS.findIndex(item => item.code === payload.code);
-          if (itemIndex === -1) throw new Error('لم يتم العثور على الصنف');
-          
-          const newQty = ITEMS[itemIndex].qty + payload.qty;
-          if (newQty < 0) throw new Error('الكمية غير كافية');
-          
-          ITEMS[itemIndex].qty = newQty;
-          localStorage.setItem('inventory_items', JSON.stringify(ITEMS));
-          
-          // تسجيل الحركة
-          const activities = JSON.parse(localStorage.getItem('inventory_activities') || '[]');
-          activities.unshift({
-            type: payload.qty > 0 ? 'in' : 'out',
-            item: payload.code,
-            qty: Math.abs(payload.qty),
-            note: payload.note || '',
-            date: new Date().toLocaleString('ar-DZ')
-          });
-          localStorage.setItem('inventory_activities', JSON.stringify(activities.slice(0, 50)));
-          break;
-          
-        case 'list':
-          // البيانات سيتم إرجاعها من المتغير ITEMS
-          break;
-      }
-      
-      return { success: true };
-    }
-
-    // اختبار اتصال Google Apps Script
-    async function testConnection() {
-      if (!SCRIPT_URL || SCRIPT_URL.includes('PASTE_WEB_APP_URL_HERE')) {
-        return false;
-      }
-      
-      try {
-        const response = await fetch(SCRIPT_URL, {
-          method: 'POST',
-          body: JSON.stringify({ action: 'list' }),
-          headers: { 'Content-Type': 'application/json' }
-        });
-        
-        return response.ok;
-      } catch (e) {
-        console.error('Connection test failed:', e);
-        return false;
-      }
-    }
-
-    // تحديث حالة الاتصال في الواجهة
-    function updateConnectionStatus(connected) {
-      const statusElement = document.getElementById('connectionStatus');
-      if (!statusElement) return;
-      
-      if (connected) {
-        statusElement.innerHTML = '🟢 متصل بـ Google Sheets';
-        statusElement.style.color = 'green';
-      } else {
-        statusElement.innerHTML = '🔴 غير متصل - العمل في الوضع المحلي';
-        statusElement.style.color = 'red';
-      }
-    }
-
-    // تحميل البيانات من التخزين المحلي
-    function loadLocalData() {
-      const savedItems = localStorage.getItem('inventory_items');
-      if (savedItems) {
-        ITEMS = JSON.parse(savedItems);
-      } else {
-        // استخدام البيانات التجريبية إذا لم توجد بيانات محفوظة
-        ITEMS = sampleData;
-        localStorage.setItem('inventory_items', JSON.stringify(ITEMS));
-      }
-      
-      const stats = calculateStats(ITEMS);
-      const cats = [...new Set(ITEMS.map(item => item.category).filter(Boolean))];
-      
-      renderStats(stats);
-      renderCats(cats);
-      renderRows();
-      updateCharts();
-      renderAlerts();
-      renderRecentActivities();
-    }
-
-    // تحميل البيانات والإحصاءات
+    // ======== وظائف إدارة البيانات ========
     async function loadAll() {
       toggleLoader(true);
-      
       try {
         // محاولة الاتصال بـ Google Sheets أولاً
         const isConnected = await testConnection();
@@ -512,18 +937,241 @@
         renderRecentActivities();
       } catch (e) {
         console.error("تعذّر تحميل البيانات: ", e);
-        
-        // استخدام البيانات المحلية في حالة الخطأ
         loadLocalData();
         updateConnectionStatus(false);
-        
         showError("تعذّر الاتصال بالخادم. يتم العمل في الوضع المحلي: " + e.message);
       } finally {
         toggleLoader(false);
       }
     }
 
-    // حساب الإحصائيات من البيانات المحلية
+    function loadLocalData() {
+      const savedItems = localStorage.getItem('inventory_items');
+      if (savedItems) {
+        ITEMS = JSON.parse(savedItems);
+      } else {
+        ITEMS = sampleData;
+        localStorage.setItem('inventory_items', JSON.stringify(ITEMS));
+      }
+      
+      const stats = calculateStats(ITEMS);
+      const cats = [...new Set(ITEMS.map(item => item.category).filter(Boolean))];
+      
+      renderStats(stats);
+      renderCats(cats);
+    }
+
+    // ======== وظائف العرض ========
+    function renderStats(s) {
+      document.getElementById('m_items').textContent = s.items || 0;
+      document.getElementById('m_qty').textContent = s.totalQty || 0;
+      document.getElementById('m_value').textContent = (s.totalValue || 0).toLocaleString('ar-DZ') + " دج";
+      document.getElementById('m_low').textContent = s.lowCount || 0;
+    }
+
+    function renderCats(cats) {
+      const sel = document.getElementById('filterCat');
+      sel.innerHTML = '<option value="">كل الفئات</option>' + 
+        cats.map(c => `<option value="${c}">${c}</option>`).join("");
+    }
+
+    function renderRows() {
+      const tbody = document.getElementById('rows');
+      if (!ITEMS.length) {
+        tbody.innerHTML = '<tr><td colspan="12" class="empty">لا توجد بيانات</td></tr>';
+        return;
+      }
+      
+      const filteredItems = ITEMS.filter(matchFilter);
+      
+      if (!filteredItems.length) {
+        tbody.innerHTML = '<tr><td colspan="12" class="empty">لا نتائج مطابقة</td></tr>';
+        return;
+      }
+      
+      tbody.innerHTML = filteredItems.map((it, i) => {
+        const value = (Number(it.qty || 0) * Number(it.price || 0));
+        const low = Number(it.qty || 0) <= Number(it.min || 0);
+        return `
+          <tr>
+            <td>${i + 1}</td>
+            <td><span class="badge">${escapeHtml(it.code || '')}</span></td>
+            <td>${escapeHtml(it.name || '')}</td>
+            <td>${escapeHtml(it.category || '')}</td>
+            <td>${escapeHtml(it.location || '')}</td>
+            <td>${escapeHtml(it.supplier || '')}</td>
+            <td>${it.min || 0}</td>
+            <td>${it.qty || 0}</td>
+            <td>${Number(it.price || 0).toLocaleString('ar-DZ')}</td>
+            <td>${value.toLocaleString('ar-DZ')}</td>
+            <td>${low ? '<span class="pill low">منخفض</span>' : '<span class="pill ok">جيد</span>'}</td>
+            <td>
+              <button class="secondary" onclick="openItem(${JSON.stringify(it).replace(/"/g, '&quot;')})">تعديل</button>
+              <button class="danger" onclick="delItem('${encodeURIComponent(it.code)}')">حذف</button>
+            </td>
+          </tr>`;
+      }).join('');
+    }
+
+    // ======== وظائف النماذج ========
+    function openItem(it = null) {
+      document.getElementById('formTitle').textContent = it ? 'تعديل صنف' : 'إضافة صنف';
+      document.getElementById('f_code').value = it?.code || '';
+      document.getElementById('f_name').value = it?.name || '';
+      document.getElementById('f_cat').value = it?.category || '';
+      document.getElementById('f_loc').value = it?.location || '';
+      document.getElementById('f_supplier').value = it?.supplier || '';
+      document.getElementById('f_min').value = it?.min || 0;
+      document.getElementById('f_qty').value = it?.qty || 0;
+      document.getElementById('f_price').value = it?.price || 0;
+      
+      // جعل رقم الصنف غير قابل للتعديل أثناء وضع التعديل
+      document.getElementById('f_code').disabled = !!it;
+      
+      showModal('modalItem', true);
+    }
+
+    async function saveItem() {
+      const payload = {
+        code: val('f_code'),
+        name: val('f_name'),
+        category: val('f_cat'),
+        location: val('f_loc'),
+        supplier: val('f_supplier'),
+        min: num('f_min'),
+        qty: num('f_qty'),
+        price: num('f_price')
+      };
+      
+      if (!payload.code || !payload.name) {
+        return showError('رقم الصنف واسم القطعة حقول إجبارية');
+      }
+      
+      try {
+        const isUpdate = document.getElementById('f_code').disabled;
+        
+        if (CONNECTED) {
+          await api(isUpdate ? 'update' : 'add', { item: payload });
+        } else {
+          // العمل محلياً
+          if (isUpdate) {
+            const index = ITEMS.findIndex(item => item.code === payload.code);
+            if (index !== -1) ITEMS[index] = payload;
+          } else {
+            if (ITEMS.some(item => item.code === payload.code)) {
+              return showError('رقم الصنف موجود مسبقاً');
+            }
+            ITEMS.push(payload);
+          }
+          localStorage.setItem('inventory_items', JSON.stringify(ITEMS));
+        }
+        
+        await loadAll();
+        showModal('modalItem', false);
+        showSuccess('تم حفظ الصنف بنجاح');
+      } catch (e) {
+        showError('فشل الحفظ: ' + e.message);
+      }
+    }
+
+    function openMove(type) {
+      MOVE_TYPE = type;
+      document.getElementById('moveTitle').textContent = type === 'in' ? 'إدخال مخزوني' : 'إخراج مخزوني';
+      showModal('modalMove', true);
+    }
+
+    async function applyMove() {
+      const code = val('mv_code');
+      const qty = num('mv_qty');
+      const note = val('mv_note');
+      
+      if (!code || !qty) {
+        return showError('رقم الصنف والكمية مطلوبان');
+      }
+      
+      try {
+        const adjustedQty = MOVE_TYPE === 'out' ? -Math.abs(qty) : Math.abs(qty);
+        
+        if (CONNECTED) {
+          await api('move', { code, qty: adjustedQty, note });
+        } else {
+          // العمل محلياً
+          const item = ITEMS.find(item => item.code === code);
+          if (!item) throw new Error('لم يتم العثور على الصنف');
+          
+          const newQty = item.qty + adjustedQty;
+          if (newQty < 0) throw new Error('الكمية غير كافية');
+          
+          item.qty = newQty;
+          localStorage.setItem('inventory_items', JSON.stringify(ITEMS));
+          
+          // تسجيل الحركة
+          const activities = JSON.parse(localStorage.getItem('inventory_activities') || '[]');
+          activities.unshift({
+            type: MOVE_TYPE,
+            item: code,
+            qty: Math.abs(qty),
+            note: note || '',
+            date: new Date().toLocaleString('ar-DZ')
+          });
+          localStorage.setItem('inventory_activities', JSON.stringify(activities.slice(0, 10)));
+        }
+        
+        await loadAll();
+        showModal('modalMove', false);
+        showSuccess('تم تنفيذ الحركة بنجاح');
+      } catch (e) {
+        showError('تعذّر تنفيذ الحركة: ' + e.message);
+      }
+    }
+
+    // ======== وظائف مساعدة ========
+    function val(id) {
+      return document.getElementById(id).value.trim();
+    }
+    
+    function num(id) {
+      return Number(document.getElementById(id).value || 0);
+    }
+    
+    function showModal(id, show) {
+      document.getElementById(id).classList.toggle('show', show);
+    }
+    
+    function toggleLoader(show) {
+      document.getElementById('mainLoader').style.display = show ? 'block' : 'none';
+    }
+    
+    function showError(msg) {
+      alert('❌ ' + msg);
+    }
+    
+    function showSuccess(msg) {
+      alert('✅ ' + msg);
+    }
+    
+    function escapeHtml(s) {
+      return (s || '').replace(/[&<>"']/g, m => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;"
+      }[m]));
+    }
+
+    // ======== وظائف إضافية ========
+    function matchFilter(it) {
+      const q = FILTER.q.trim().toLowerCase();
+      if (q) {
+        const searchStr = [it.code, it.name, it.category, it.location, it.supplier]
+          .join(' ').toLowerCase();
+        if (!searchStr.includes(q)) return false;
+      }
+      if (FILTER.cat && it.category !== FILTER.cat) return false;
+      
+      const status = it.qty <= (parseFloat(it.min) || 0) ? 'low' : 'ok';
+      if (FILTER.status && FILTER.status !== status) return false;
+      
+      return true;
+    }
+
     function calculateStats(items) {
       const totalQty = items.reduce((sum, item) => sum + (Number(item.qty) || 0), 0);
       const totalValue = items.reduce((sum, item) => sum + (Number(item.qty) || 0) * (Number(item.price) || 0), 0);
@@ -537,434 +1185,8 @@
       };
     }
 
-    function renderCats(cats){
-      const sel = document.getElementById('filterCat');
-      sel.innerHTML = '<option value="">كل الفئات</option>' + (cats||[]).map(c=>`<option>${c}</option>`).join("");
-    }
+    // يمكنك إضافة المزيد من الوظائف هنا حسب الحاجة
 
-    function renderStats(s){
-      document.getElementById('m_items').textContent = s.items||0;
-      document.getElementById('m_qty').textContent = s.totalQty||0;
-      document.getElementById('m_value').textContent = (s.totalValue||0).toLocaleString('ar-DZ')+" دج";
-      document.getElementById('m_low').textContent = s.lowCount||0;
-    }
-
-    function matchFilter(it){
-      const q = FILTER.q.trim().toLowerCase();
-      if(q){
-        const blob = [it.code,it.name,it.category,it.location,it.supplier].join(' ').toLowerCase();
-        if(!blob.includes(q)) return false;
-      }
-      if(FILTER.cat && it.category!==FILTER.cat) return false;
-      const status = it.qty <= (parseFloat(it.min)||0) ? 'low' : 'ok';
-      if(FILTER.status && FILTER.status!==status) return false;
-      return true;
-    }
-
-    function renderRows(){
-      const tbody = document.getElementById('rows');
-      if(!ITEMS.length){ tbody.innerHTML = '<tr><td colspan="12" class="empty">لا توجد بيانات</td></tr>'; return; }
-      let i=0; const rows = ITEMS.filter(matchFilter).map(it=>{
-        const value = (Number(it.qty||0)*Number(it.price||0));
-        const low = Number(it.qty||0) <= Number(it.min||0);
-        return `<tr>
-          <td>${++i}</td>
-          <td><span class="badge">${escapeHtml(it.code||'')}</span></td>
-          <td>${escapeHtml(it.name||'')}</td>
-          <td>${escapeHtml(it.category||'')}</td>
-          <td>${escapeHtml(it.location||'')}</td>
-          <td>${escapeHtml(it.supplier||'')}</td>
-          <td>${it.min||0}</td>
-          <td>${it.qty||0}</td>
-          <td>${Number(it.price||0).toLocaleString('ar-DZ')}</td>
-          <td>${value.toLocaleString('ar-DZ')}</td>
-          <td>${low?'<span class="pill low">منخفض</span>':'<span class="pill ok">جيد</span>'}</td>
-          <td>
-            <button class="secondary" onclick='openItem(${JSON.stringify(it)})'>تعديل</button>
-            <button class="danger" onclick='delItem("${encodeURIComponent(it.code)}")'>حذف</button>
-          </td>
-        </tr>`;
-      }).join('');
-      tbody.innerHTML = rows || '<tr><td colspan="12" class="empty">لا نتائج مطابقة</td></tr>';
-    }
-
-    function escapeHtml(s=''){return s.replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]))}
-
-    // فتح نافذة الصنف (إضافة/تعديل)
-    function openItem(it){
-      document.getElementById('formTitle').textContent = it? 'تعديل صنف' : 'إضافة صنف';
-      document.getElementById('f_code').value = it?.code||'';
-      document.getElementById('f_name').value = it?.name||'';
-      document.getElementById('f_cat').value = it?.category||'';
-      document.getElementById('f_loc').value = it?.location||'';
-      document.getElementById('f_supplier').value = it?.supplier||'';
-      document.getElementById('f_min').value = it?.min||0;
-      document.getElementById('f_qty').value = it?.qty||0;
-      document.getElementById('f_price').value = it?.price||0;
-      showModal('modalItem', true);
-      // جعل رقم الصنف غير قابل للتعديل أثناء وضع التعديل
-      document.getElementById('f_code').disabled = !!it;
-    }
-
-    async function saveItem(){
-      const payload = {
-        code: val('f_code'), name: val('f_name'), category: val('f_cat'), location: val('f_loc'), supplir: val('f_supplier'),
-        min: num('f_min'), qty: num('f_qty'), price: num('f_price')
-      };
-      if(!payload.code || !payload.name) return showError('رقم الصنف واسم القطعة حقول إجبارية');
-      
-      try{
-        if (SCRIPT_URL && CONNECTED) {
-          const mode = document.getElementById('f_code').disabled ? 'update' : 'add';
-          await api(mode, { item: payload });
-        } else {
-          // إضافة/تعديل البيانات محلياً
-          if (document.getElementById('f_code').disabled) {
-            // تعديل
-            const index = ITEMS.findIndex(item => item.code === payload.code);
-            if (index !== -1) {
-              ITEMS[index] = payload;
-            }
-          } else {
-            // إضافة
-            if (ITEMS.some(item => item.code === payload.code)) {
-              return showError('رقم الصنف موجود مسبقاً');
-            }
-            ITEMS.push(payload);
-          }
-          localStorage.setItem('inventory_items', JSON.stringify(ITEMS));
-        }
-        
-        await loadAll();
-        showModal('modalItem', false);
-        showSuccess('تم حفظ الصنف بنجاح');
-      }catch(e){ showError('فشل الحفظ: '+e.message); }
-    }
-
-    async function delItem(code){
-      if(!confirm('تأكيد حذف الصنف؟')) return;
-      
-      try{
-        if (SCRIPT_URL && CONNECTED) {
-          await api('delete', { code: decodeURIComponent(code) });
-        } else {
-          // حذف محلي
-          ITEMS = ITEMS.filter(item => item.code !== decodeURIComponent(code));
-          localStorage.setItem('inventory_items', JSON.stringify(ITEMS));
-        }
-        
-        await loadAll();
-        showSuccess('تم حذف الصنف بنجاح');
-      }catch(e){ showError('تعذّر الحذف: '+e.message); }
-    }
-
-    // حركة مخزونية
-    let MOVE_TYPE = 'in';
-    function openMove(type){
-      MOVE_TYPE = type; // 'in' or 'out'
-      document.getElementById('moveTitle').textContent = type==='in' ? 'إدخال مخزوني' : 'إخراج مخزوني';
-      showModal('modalMove', true);
-    }
-
-    async function applyMove(){
-      const code = val('mv_code');
-      const qty  = num('mv_qty');
-      const note = val('mv_note');
-      if(!code || !qty) return showError('رقم الصنف والكمية مطلوبان');
-      
-      try{
-        if (SCRIPT_URL && CONNECTED) {
-          await api('move', { code, qty:(MOVE_TYPE==='out'?-Math.abs(qty):Math.abs(qty)), note });
-        } else {
-          // تطبيق الحركة محلياً
-          const item = ITEMS.find(item => item.code === code);
-          if (item) {
-            if (MOVE_TYPE === 'in') {
-              item.qty = (Number(item.qty) || 0) + Math.abs(qty);
-            } else {
-              item.qty = Math.max(0, (Number(item.qty) || 0) - Math.abs(qty);
-            }
-            
-            localStorage.setItem('inventory_items', JSON.stringify(ITEMS));
-            
-            // تسجيل الحركة في النشاطات
-            const activities = JSON.parse(localStorage.getItem('inventory_activities') || '[]');
-            activities.unshift({
-              type: MOVE_TYPE,
-              item: code,
-              qty: Math.abs(qty),
-              note: note,
-              date: new Date().toLocaleString('ar-DZ')
-            });
-            localStorage.setItem('inventory_activities', JSON.stringify(activities.slice(0, 10))); // حفظ آخر 10 حركات فقط
-          } else {
-            return showError('لم يتم العثور على الصنف');
-          }
-        }
-        
-        await loadAll();
-        showModal('modalMove', false);
-        showSuccess('تم تنفيذ الحركة بنجاح');
-      }catch(e){ showError('تعذّر تنفيذ الحركة: '+e.message); }
-    }
-
-    // تصدير CSV
-    function exportCSV(){
-      const cols = ['code','name','category','location','supplir','min','qty','price'];
-      const rows = [cols.join(',')].concat(ITEMS.map(it=>cols.map(c=>`"${String(it[c]??'').replaceAll('"','""')}"`).join(',')));
-      const blob = new Blob(["\ufeff"+rows.join('\n')], {type:'text/csv;charset=utf-8;'});
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'inventory.csv';
-      a.click();
-      URL.revokeObjectURL(a.href);
-    }
-
-    // إنشاء الرسوم البيانية
-    function updateCharts() {
-      // رسم توزيع المخزون حسب الفئة
-      const categories = {};
-      ITEMS.forEach(item => {
-        const cat = item.category || 'غير مصنف';
-        categories[cat] = (categories[cat] || 0) + (Number(item.qty) || 0);
-      });
-      
-      if (categoryChart) categoryChart.destroy();
-      const catCtx = document.getElementById('categoryChart').getContext('2d');
-      categoryChart = new Chart(catCtx, {
-        type: 'pie',
-        data: {
-          labels: Object.keys(categories),
-          datasets: [{
-            data: Object.values(categories),
-            backgroundColor: ['#2e7d32', '#1565c0', '#d32f2f', '#ffa000', '#7b1fa2', '#00897b', '#f57c00', '#5d4037']
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: {
-              position: 'left',
-              rtl: true
-            }
-          }
-        }
-      });
-      
-      // رسم الحالة المخزنية
-      let lowCount = 0, okCount = 0;
-      ITEMS.forEach(item => {
-        if (Number(item.qty) <= Number(item.min)) lowCount++;
-        else okCount++;
-      });
-      
-      if (statusChart) statusChart.destroy();
-      const statusCtx = document.getElementById('statusChart').getContext('2d');
-      statusChart = new Chart(statusCtx, {
-        type: 'doughnut',
-        data: {
-          labels: ['تحت الحد الأدنى', 'ضمن المخزون الآمن'],
-          datasets: [{
-            data: [lowCount, okCount],
-            backgroundColor: ['#ef6c00', '#2e7d32']
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: {
-              position: 'left',
-              rtl: true
-            }
-          }
-        }
-      });
-    }
-
-    // عرض التنبيهات
-    function renderAlerts() {
-      const container = document.getElementById('alertsContainer');
-      const lowItems = ITEMS.filter(item => Number(item.qty) <= Number(item.min));
-      
-      if (lowItems.length === 0) {
-        container.innerHTML = '<div class="alert info"><i class="fas fa-info-circle"></i> <div>جميع الأصناف ضمن المخزون الآمن</div></div>';
-        return;
-      }
-      
-      container.innerHTML = `
-        <div class="alert warning">
-          <i class="fas fa-exclamation-triangle"></i>
-          <div>هناك ${lowItems.length} أصناف تحت الحد الأدنى للمخزون تحتاج إلى مراجعة</div>
-        </div>
-      `;
-    }
-
-    // عرض الحركات الحديثة
-    function renderRecentActivities() {
-      const container = document.getElementById('recentActivities');
-      let activities = [];
-      
-      if (!CONNECTED) {
-        // استخدام البيانات المحفوظة محلياً
-        activities = JSON.parse(localStorage.getItem('inventory_activities') || []);
-      }
-      // في التطبيق الكامل، سيتم جلب البيانات من الخادم
-      
-      if (activities.length === 0) {
-        container.innerHTML = '<div class="empty">لا توجد حركات حديثة</div>';
-        return;
-      }
-      
-      container.innerHTML = activities.map(act => `
-        <div class="activity-item">
-          <div class="activity-type">
-            <i class="fas ${act.type === 'in' ? 'fa-arrow-down activity-in' : 'fa-arrow-up activity-out'}"></i>
-            <span>${act.type === 'in' ? 'إدخال' : 'إخراج'} ${act.qty} وحدة من ${act.item}</span>
-          </div>
-          <div>
-            <span>${act.note}</span>
-            <span class="activity-date">${act.date}</span>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    // الاتصال بـ Google Sheets
-    async function connectToGoogleSheets() {
-      const url = document.getElementById('scriptUrl').value.trim();
-      if (!url) {
-        return showError('يرجى إدخال رابط Web App');
-      }
-      
-      // حفظ الرابط في localStorage
-      localStorage.setItem('inventory_script_url', url);
-      SCRIPT_URL = url;
-      
-      toggleLoader(true);
-      try {
-        const isConnected = await testConnection();
-        if (isConnected) {
-          CONNECTED = true;
-          updateConnectionStatus(true);
-          showSuccess('تم الاتصال بنجاح بـ Google Sheets');
-          await loadAll();
-        } else {
-          throw new Error('فشل الاتصال بـ Google Sheets');
-        }
-      } catch (e) {
-        showError('تعذر الاتصال: ' + e.message);
-        updateConnectionStatus(false);
-      } finally {
-        toggleLoader(false);
-      }
-    }
-
-    // تصدير البيانات المحلية
-    function exportLocalData() {
-      const data = {
-        items: ITEMS,
-        activities: JSON.parse(localStorage.getItem('inventory_activities') || [])
-      };
-      
-      const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'inventory_backup.json';
-      a.click();
-      URL.revokeObjectURL(a.href);
-      
-      showSuccess('تم تصدير البيانات المحلية بنجاح');
-    }
-
-    // استيراد البيانات المحلية
-    function importLocalData() {
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.accept = '.json';
-      
-      input.onchange = function(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-        
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          try {
-            const data = JSON.parse(e.target.result);
-            
-            if (data.items) {
-              ITEMS = data.items;
-              localStorage.setItem('inventory_items', JSON.stringify(ITEMS));
-            }
-            
-            if (data.activities) {
-              localStorage.setItem('inventory_activities', JSON.stringify(data.activities));
-            }
-            
-            loadAll();
-            showSuccess('تم استيراد البيانات بنجاح');
-          } catch (e) {
-            showError('فشل استيراد البيانات: ' + e.message);
-          }
-        };
-        
-        reader.readAsText(file);
-      };
-      
-      input.click();
-    }
-
-    // مسح البيانات المحلية
-    function clearLocalData() {
-      if (!confirm('هل أنت متأكد من مسح جميع البيانات المحلية؟ لا يمكن التراجع عن هذا الإجراء.')) return;
-      
-      localStorage.removeItem('inventory_items');
-      localStorage.removeItem('inventory_activities');
-      ITEMS = [];
-      
-      loadAll();
-      showSuccess('تم مسح البيانات المحلية بنجاح');
-    }
-
-    // أدوات عامة
-    function val(id){return document.getElementById(id).value.trim();}
-    function num(id){return Number(document.getElementById(id).value||0)}
-    function showModal(id,show){ document.getElementById(id).classList.toggle('show', !!show); }
-    function toggleLoader(show){ document.getElementById('mainLoader').style.display = show ? 'block' : 'none'; }
-    function showError(msg){ alert('خطأ: ' + msg); }
-    function showSuccess(msg){ alert('نجاح: ' + msg); }
-
-    // أحداث
-    document.getElementById('btnAdd').onclick = ()=>openItem();
-    document.getElementById('btnIn').onclick  = ()=>openMove('in');
-    document.getElementById('btnOut').onclick = ()=>openMove('out');
-    document.getElementById('btnRefresh').onclick = loadAll;
-    document.getElementById('btnExport').onclick = exportCSV;
-    document.getElementById('btnConnect').onclick = connectToGoogleSheets;
-    document.getElementById('btnExportLocal').onclick = exportLocalData;
-    document.getElementById('btnImportLocal').onclick = importLocalData;
-    document.getElementById('btnClearLocal').onclick = clearLocalData;
-    
-    document.querySelectorAll('[data-close]').forEach(el=>el.onclick=()=>{
-      el.closest('.modal').classList.remove('show');
-    });
-    
-    document.getElementById('saveItem').onclick = saveItem;
-    document.getElementById('applyMove').onclick = applyMove;
-
-    document.getElementById('search').oninput = e=>{ FILTER.q = e.target.value; renderRows(); };
-    document.getElementById('filterCat').onchange = e=>{ FILTER.cat = e.target.value; renderRows(); };
-    document.getElementById('filterStatus').onchange = e=>{ FILTER.status = e.target.value; renderRows(); };
-
-    // بدء التشغيل
-    document.getElementById('scriptUrl').value = SCRIPT_URL;
-    
-    // محاولة الاتصال التلقائي عند التحميل
-    setTimeout(() => {
-      connectToGoogleSheets();
-    }, 2000);
-    
-    // تحميل البيانات المحلية كنسخة احتياطية
-    loadLocalData();
   </script>
 </body>
 </html>
