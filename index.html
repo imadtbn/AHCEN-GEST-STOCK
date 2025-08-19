@@ -40,11 +40,6 @@
       line-height: 1.6;
     }
 
-    a {
-      color: var(--primary);
-      text-decoration: none;
-    }
-
     .container {
       max-width: 1200px;
       margin: 0 auto;
@@ -608,7 +603,7 @@
       <h3>إعدادات الاتصال بـ Google Sheets</h3>
       <div class="connection-form">
         <input type="text" id="scriptUrl" placeholder="رابط Web App من Google Apps Script" 
-               value="https://script.google.com/macros/s/AKfycbyoW8BP73cMHF29DxsV3XNnNYTrZVCDaQpQQswr3bixkaUhHLGCn6TcICek_GODZesE/exec" />
+               value="https://script.google.com/macros/s/AKfycbyUPMm2yh4eTKTmyVdGMK7lFm-vZ-0bLiDmQhN6KphYkjfPebZZJ6AM8eYP0mGPqJhZ/exec" />
         <button id="btnConnect"><i class="fas fa-plug"></i> اتصال</button>
       </div>
       <div class="hint">تم تعبئة الرابط تلقائياً. انقر على "اتصال" للربط مع Google Sheets.</div>
@@ -805,20 +800,11 @@
 
   <script>
     // ======== المتغيرات العامة ========
-    let SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyoW8BP73cMHF29DxsV3XNnNYTrZVCDaQpQQswr3bixkaUhHLGCn6TcICek_GODZesE/exec";
+    let SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyUPMm2yh4eTKTmyVdGMK7lFm-vZ-0bLiDmQhN6KphYkjfPebZZJ6AM8eYP0mGPqJhZ/exec";
     let CONNECTED = false;
     let ITEMS = [];
     let FILTER = { q: "", cat: "", status: "" };
     let categoryChart, statusChart;
-
-    // بيانات تجريبية
-    const sampleData = [
-      { code: "BRK-001", name: "بريك أمامي", category: "فرامل", location: "رف A1", supplier: "شركة الفرامل", min: 5, qty: 3, price: 2500 },
-      { code: "OIL-002", name: "زيت محرك", category: "زيوت", location: "رف B2", supplier: "شركة الزيوت", min: 10, qty: 15, price: 800 },
-      { code: "FLT-003", name: "فلتر هواء", category: "فلاتر", location: "رف C3", supplier: "شركة الفلاتر", min: 8, qty: 5, price: 1200 },
-      { code: "BLT-004", name: "سير محرك", category: "إكسسوارات", location: "رف D4", supplier: "شركة الإكسسوارات", min: 3, qty: 7, price: 1500 },
-      { code: "SPK-005", name: "شمعة احتراق", category: "إلكترونيات", location: "رف E5", supplier: "شركة الإلكترونيات", min: 12, qty: 20, price: 400 }
-    ];
 
     // ======== تهيئة الصفحة ========
     document.addEventListener('DOMContentLoaded', function() {
@@ -829,17 +815,7 @@
 
     // ======== وظائف التهيئة ========
     function initializeApp() {
-      // تعيين رابط السكريبت في حقل الإدخال
       document.getElementById('scriptUrl').value = SCRIPT_URL;
-      
-      // تحميل البيانات المحلية إذا وجدت
-      const savedItems = localStorage.getItem('inventory_items');
-      if (savedItems) {
-        ITEMS = JSON.parse(savedItems);
-      } else {
-        ITEMS = sampleData;
-        localStorage.setItem('inventory_items', JSON.stringify(ITEMS));
-      }
     }
 
     function setupEventListeners() {
@@ -949,9 +925,6 @@
       const savedItems = localStorage.getItem('inventory_items');
       if (savedItems) {
         ITEMS = JSON.parse(savedItems);
-      } else {
-        ITEMS = sampleData;
-        localStorage.setItem('inventory_items', JSON.stringify(ITEMS));
       }
       
       const stats = calculateStats(ITEMS);
@@ -1185,8 +1158,171 @@
       };
     }
 
-    // يمكنك إضافة المزيد من الوظائف هنا حسب الحاجة
+    async function testConnection() {
+      if (!SCRIPT_URL) return false;
+      
+      try {
+        const response = await fetch(SCRIPT_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'list' }),
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        return response.ok;
+      } catch (e) {
+        console.error('Connection test failed:', e);
+        return false;
+      }
+    }
 
+    function updateConnectionStatus(connected) {
+      const statusElement = document.getElementById('connectionStatus');
+      if (!statusElement) return;
+      
+      if (connected) {
+        statusElement.innerHTML = '🟢 متصل بـ Google Sheets';
+        statusElement.style.color = 'green';
+      } else {
+        statusElement.innerHTML = '🔴 غير متصل - العمل في الوضع المحلي';
+        statusElement.style.color = 'red';
+      }
+    }
+
+    async function connectToGoogleSheets() {
+      const url = document.getElementById('scriptUrl').value.trim();
+      if (!url) {
+        return showError('يرجى إدخال رابط Web App');
+      }
+      
+      SCRIPT_URL = url;
+      localStorage.setItem('inventory_script_url', url);
+      
+      toggleLoader(true);
+      try {
+        const isConnected = await testConnection();
+        if (isConnected) {
+          CONNECTED = true;
+          updateConnectionStatus(true);
+          showSuccess('تم الاتصال بنجاح بـ Google Sheets');
+          await loadAll();
+        } else {
+          throw new Error('فشل الاتصال بـ Google Sheets');
+        }
+      } catch (e) {
+        showError('تعذر الاتصال: ' + e.message);
+        updateConnectionStatus(false);
+      } finally {
+        toggleLoader(false);
+      }
+    }
+
+    function exportLocalData() {
+      const data = {
+        items: ITEMS,
+        activities: JSON.parse(localStorage.getItem('inventory_activities') || [])
+      };
+      
+      const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'inventory_backup.json';
+      a.click();
+      URL.revokeObjectURL(a.href);
+      
+      showSuccess('تم تصدير البيانات المحلية بنجاح');
+    }
+
+    function importLocalData() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json';
+      
+      input.onchange = function(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          try {
+            const data = JSON.parse(e.target.result);
+            
+            if (data.items) {
+              ITEMS = data.items;
+              localStorage.setItem('inventory_items', JSON.stringify(ITEMS));
+            }
+            
+            if (data.activities) {
+              localStorage.setItem('inventory_activities', JSON.stringify(data.activities));
+            }
+            
+            loadAll();
+            showSuccess('تم استيراد البيانات بنجاح');
+          } catch (e) {
+            showError('فشل استيراد البيانات: ' + e.message);
+          }
+        };
+        
+        reader.readAsText(file);
+      };
+      
+      input.click();
+    }
+
+    function clearLocalData() {
+      if (!confirm('هل أنت متأكد من مسح جميع البيانات المحلية؟ لا يمكن التراجع عن هذا الإجراء.')) return;
+      
+      localStorage.removeItem('inventory_items');
+      localStorage.removeItem('inventory_activities');
+      ITEMS = [];
+      
+      loadAll();
+      showSuccess('تم مسح البيانات المحلية بنجاح');
+    }
+
+    function exportCSV() {
+      const cols = ['code', 'name', 'category', 'location', 'supplier', 'min', 'qty', 'price'];
+      const rows = [cols.join(',')].concat(ITEMS.map(it => 
+        cols.map(c => `"${String(it[c] || '').replace(/"/g, '""')}"`).join(',')
+      ));
+      
+      const blob = new Blob(["\ufeff" + rows.join('\n')], {type: 'text/csv;charset=utf-8;'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'inventory.csv';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+
+    function updateCharts() {
+      // سيتم تنفيذ هذا لاحقاً
+    }
+
+    function renderAlerts() {
+      // سيتم تنفيذ هذا لاحقاً
+    }
+
+    function renderRecentActivities() {
+      // سيتم تنفيذ هذا لاحقاً
+    }
+
+    // دالة لحذف العنصر
+    async function delItem(code) {
+      if (!confirm('تأكيد حذف الصنف؟')) return;
+      
+      try {
+        if (CONNECTED) {
+          await api('delete', { code: decodeURIComponent(code) });
+        } else {
+          ITEMS = ITEMS.filter(item => item.code !== decodeURIComponent(code));
+          localStorage.setItem('inventory_items', JSON.stringify(ITEMS));
+        }
+        
+        await loadAll();
+        showSuccess('تم حذف الصنف بنجاح');
+      } catch (e) {
+        showError('تعذّر الحذف: ' + e.message);
+      }
+    }
   </script>
 </body>
 </html>
