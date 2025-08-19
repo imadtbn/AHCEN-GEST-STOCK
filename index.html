@@ -130,7 +130,7 @@
         <div class="logo">⚙️</div>
         <div>
           <h1>نظام إدارة مخزن قطع الغيار</h1>
-          <div class="hint" id="connectionStatus">⚪ غير متصل بـ Google Sheets</div>
+          <div class="hint" id="connectionStatus">🔵 جاهز للاتصال بـ Google Sheets</div>
         </div>
       </div>
       <div class="actions">
@@ -145,10 +145,11 @@
     <div class="connection-settings card">
       <h3>إعدادات الاتصال بـ Google Sheets</h3>
       <div class="connection-form">
-        <input type="text" id="scriptUrl" placeholder="رابط Web App من Google Apps Script" />
+        <input type="text" id="scriptUrl" placeholder="رابط Web App من Google Apps Script" 
+               value="https://script.google.com/macros/s/AKfycbyoW8BP73cMHF29DxsV3XNnNYTrZVCDaQpQQswr3bixkaUhHLGCn6TcICek_GODZesE/exec" />
         <button id="btnConnect">اتصال</button>
       </div>
-      <div class="hint">لإنشاء رابط Web App، اتبع الخطوات في <a href="#" id="helpLink">دليل الإعداد</a></div>
+      <div class="hint">تم تعبئة الرابط تلقائياً. انقر على "اتصال" للربط مع Google Sheets.</div>
     </div>
     
     <!-- إدارة البيانات المحلية -->
@@ -156,13 +157,6 @@
       <button class="info" id="btnExportLocal">💾 تصدير البيانات المحلية</button>
       <button class="info" id="btnImportLocal">📤 استيراد إلى البيانات المحلية</button>
       <button class="danger" id="btnClearLocal">🗑️ مسح البيانات المحلية</button>
-    </div>
-    
-    <!-- التبويبات -->
-    <div class="tabs">
-      <div class="tab active" data-tab="dashboard">لوحة التحكم</div>
-      <div class="tab" data-tab="inventory">المخزون</div>
-      <div class="tab" data-tab="reports">التقارير</div>
     </div>
     
     <!-- البطاقات -->
@@ -297,33 +291,9 @@
     </div>
   </div>
 
-  <!-- نافذة المساعدة -->
-  <div class="modal" id="modalHelp">
-    <div class="box">
-      <header>
-        <h3>دليل إعداد Google Apps Script</h3>
-      </header>
-      <div>
-        <p>لربط النظام مع Google Sheets، اتبع الخطوات التالية:</p>
-        <ol>
-          <li>أنشئ جدول بيانات جديد في Google Sheets</li>
-          <li>افتح محرر النصوص البرمجية (Tools → Script editor)</li>
-          <li>انسخ الكود البرمجي من <a href="#" id="copyScriptLink">هذا الرابط</a> والصقه في المحرر</li>
-          <li>احفظ المشروع وسمّه كما تريد</li>
-          <li>انشر التطبيق (Deploy → New deployment → Web App)</li>
-          <li>عيّن "Who has access" إلى "Anyone"</li>
-          <li>انسخ رابط Web App والصقه في حقل الإدخال بالأعلى</li>
-        </ol>
-      </div>
-      <footer>
-        <button class="secondary" data-close>إغلاق</button>
-      </footer>
-    </div>
-  </div>
-
   <script>
     /* ======== إعدادات الربط مع Google Apps Script ======== */
-    let SCRIPT_URL = localStorage.getItem('inventory_script_url') || "";
+    let SCRIPT_URL = localStorage.getItem('inventory_script_url') || "https://script.google.com/macros/s/AKfycbyoW8BP73cMHF29DxsV3XNnNYTrZVCDaQpQQswr3bixkaUhHLGCn6TcICek_GODZesE/exec";
     let CONNECTED = false;
 
     /* ======== حالة التطبيق ======== */
@@ -342,7 +312,7 @@
 
     // مساعد لطلبات الشبكة
     async function api(action, payload = {}) {
-      if (!SCRIPT_URL || SCRIPT_URL.includes('https://script.google.com/macros/s/AKfycbyoW8BP73cMHF29DxsV3XNnNYTrZVCDaQpQQswr3bixkaUhHLGCn6TcICek_GODZesE/exec')) {
+      if (!SCRIPT_URL || SCRIPT_URL.includes('PASTE_WEB_APP_URL_HERE')) {
         // العمل في الوضع المحلي بدون اتصال
         await simulateApiCall(action, payload);
         return { success: true };
@@ -459,7 +429,7 @@
 
     // اختبار اتصال Google Apps Script
     async function testConnection() {
-      if (!SCRIPT_URL || SCRIPT_URL.includes('https://script.google.com/macros/s/AKfycbyoW8BP73cMHF29DxsV3XNnNYTrZVCDaQpQQswr3bixkaUhHLGCn6TcICek_GODZesE/exec')) {
+      if (!SCRIPT_URL || SCRIPT_URL.includes('PASTE_WEB_APP_URL_HERE')) {
         return false;
       }
       
@@ -638,7 +608,7 @@
 
     async function saveItem(){
       const payload = {
-        code: val('f_code'), name: val('f_name'), category: val('f_cat'), location: val('f_loc'), supplier: val('f_supplier'),
+        code: val('f_code'), name: val('f_name'), category: val('f_cat'), location: val('f_loc'), supplir: val('f_supplier'),
         min: num('f_min'), qty: num('f_qty'), price: num('f_price')
       };
       if(!payload.code || !payload.name) return showError('رقم الصنف واسم القطعة حقول إجبارية');
@@ -712,7 +682,7 @@
             if (MOVE_TYPE === 'in') {
               item.qty = (Number(item.qty) || 0) + Math.abs(qty);
             } else {
-              item.qty = Math.max(0, (Number(item.qty) || 0) - Math.abs(qty));
+              item.qty = Math.max(0, (Number(item.qty) || 0) - Math.abs(qty);
             }
             
             localStorage.setItem('inventory_items', JSON.stringify(ITEMS));
@@ -740,7 +710,7 @@
 
     // تصدير CSV
     function exportCSV(){
-      const cols = ['code','name','category','location','supplier','min','qty','price'];
+      const cols = ['code','name','category','location','supplir','min','qty','price'];
       const rows = [cols.join(',')].concat(ITEMS.map(it=>cols.map(c=>`"${String(it[c]??'').replaceAll('"','""')}"`).join(',')));
       const blob = new Blob(["\ufeff"+rows.join('\n')], {type:'text/csv;charset=utf-8;'});
       const a = document.createElement('a');
@@ -893,7 +863,7 @@
     function exportLocalData() {
       const data = {
         items: ITEMS,
-        activities: JSON.parse(localStorage.getItem('inventory_activities') || []
+        activities: JSON.parse(localStorage.getItem('inventory_activities') || [])
       };
       
       const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
@@ -970,8 +940,6 @@
     document.getElementById('btnRefresh').onclick = loadAll;
     document.getElementById('btnExport').onclick = exportCSV;
     document.getElementById('btnConnect').onclick = connectToGoogleSheets;
-    document.getElementById('helpLink').onclick = (e)=>{ e.preventDefault(); showModal('modalHelp', true); };
-    document.getElementById('copyScriptLink').onclick = (e)=>{ e.preventDefault(); alert('سيتم توفير الكود البرمجي في دليل الإعداد'); };
     document.getElementById('btnExportLocal').onclick = exportLocalData;
     document.getElementById('btnImportLocal').onclick = importLocalData;
     document.getElementById('btnClearLocal').onclick = clearLocalData;
@@ -987,23 +955,16 @@
     document.getElementById('filterCat').onchange = e=>{ FILTER.cat = e.target.value; renderRows(); };
     document.getElementById('filterStatus').onchange = e=>{ FILTER.status = e.target.value; renderRows(); };
 
-    // التبويبات
-    document.querySelectorAll('.tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-        // هنا يمكنك إضافة منطق لعرض المحتوى المناسب لكل تبويب
-      });
-    });
-
     // بدء التشغيل
     document.getElementById('scriptUrl').value = SCRIPT_URL;
-    if (SCRIPT_URL) {
-      document.getElementById('connectionStatus').textContent = '🟡 جاهز للاتصال بـ Google Sheets';
-      document.getElementById('connectionStatus').style.color = 'orange';
-    }
     
-    loadAll();
+    // محاولة الاتصال التلقائي عند التحميل
+    setTimeout(() => {
+      connectToGoogleSheets();
+    }, 2000);
+    
+    // تحميل البيانات المحلية كنسخة احتياطية
+    loadLocalData();
   </script>
 </body>
 </html>
