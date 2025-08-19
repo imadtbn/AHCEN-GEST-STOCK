@@ -342,7 +342,7 @@
 
     // مساعد لطلبات الشبكة
     async function api(action, payload = {}) {
-      if (!SCRIPT_URL || SCRIPT_URL.includes('PASTE_WEB_APP_URL_HERE')) {
+      if (!SCRIPT_URL || SCRIPT_URL.includes('https://script.google.com/macros/s/AKfycbyoW8BP73cMHF29DxsV3XNnNYTrZVCDaQpQQswr3bixkaUhHLGCn6TcICek_GODZesE/exec')) {
         // العمل في الوضع المحلي بدون اتصال
         await simulateApiCall(action, payload);
         return { success: true };
