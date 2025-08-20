@@ -578,7 +578,7 @@
       <h3>إعدادات الاتصال بـ Google Sheets</h3>
       <div class="connection-form">
         <input type="text" id="scriptUrl" placeholder="رابط Web App من Google Apps Script" 
-               value="https://script.google.com/macros/s/AKfycbyUPMm2yh4eTKTmyVdGMK7lFm-vZ-0bLiDmQhN6KphYkjfPebZZJ6AM8eYP0mGPqJhZ/exec" />
+               value="https://script.google.com/macros/s/AKfycbwJKNOhc2Ft3ijbQK1Qaa9fKahBj05dFMSmpFWAjt1IsmE7rG1e0bRxK64cAWErbdWL/exec" />
         <button id="btnConnect"><i class="fas fa-plug"></i> اتصال</button>
       </div>
       <div class="hint">تم تعبئة الرابط تلقائياً. انقر على "اتصال" للربط مع Google Sheets.</div>
@@ -769,7 +769,7 @@
 
   <script>
     // ======== المتغيرات العامة ========
-    let SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyUPMm2yh4eTKTmyVdGMK7lFm-vZ-0bLiDmQhN6KphYkjfPebZZJ6AM8eYP0mGPqJhZ/exec";
+    let SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwJKNOhc2Ft3ijbQK1Qaa9fKahBj05dFMSmpFWAjt1IsmE7rG1e0bRxK64cAWErbdWL/exec";
     let CONNECTED = false;
     let ITEMS = [];
     let FILTER = { q: "", cat: "", status: "" };
@@ -836,31 +836,44 @@
     }
 
     async function api(action, payload = {}) {
-      toggleLoader(true);
-      try {
-        const body = JSON.stringify({ action, ...payload });
-        const res = await fetch(SCRIPT_URL, {
-          method: "POST",
-          body,
-          headers: { "Content-Type": "application/json" }
-        });
-        
-        if (!res.ok) {
-          const errorText = await res.text();
-          throw new Error(`HTTP ${res.status}: ${errorText}`);
-        }
-        
-        const data = await res.json();
-        if (data.error) throw new Error(data.error);
-        
-        return data;
-      } catch (e) {
-        console.error("API Error:", e);
-        throw new Error("فشل في الاتصال بالخادم");
-      } finally {
-        toggleLoader(false);
-      }
+  toggleLoader(true);
+  try {
+    const body = JSON.stringify({ action, ...payload });
+    const res = await fetch(SCRIPT_URL, {
+      method: "POST",
+      body,
+      headers: { "Content-Type": "application/json" }
+    });
+    
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(`HTTP ${res.status}: ${errorText}`);
     }
+    
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    
+    return data;
+  } catch (e) {
+    console.error("API Error:", e);
+    // محاولة بديلة للتعامل مع CORS
+    try {
+      const body = JSON.stringify({ action, ...payload });
+      const res = await fetch(SCRIPT_URL + '?action=' + action, {
+        method: "POST",
+        body,
+        headers: { "Content-Type": "application/json" }
+      });
+      
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return await res.json();
+    } catch (fallbackError) {
+      throw new Error("فشل في الاتصال بالخادم: " + e.message);
+    }
+  } finally {
+    toggleLoader(false);
+  }
+}
 
     async function loadAll() {
       toggleLoader(true);
