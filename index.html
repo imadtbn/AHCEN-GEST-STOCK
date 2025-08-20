@@ -607,6 +607,9 @@
         <button id="btnConnect"><i class="fas fa-plug"></i> اتصال</button>
       </div>
       <div class="hint">تم تعبئة الرابط تلقائياً. انقر على "اتصال" للربط مع Google Sheets.</div>
+      <div class="hint" id="connectionHelp" style="color: #d32f2f; display: none;">
+        ❌ تعذر الاتصال. يرجى التأكد من نشر التطبيق كتطبيق ويب مع صلاحية "أي شخص".
+      </div>
     </div>
     
     <!-- إدارة البيانات المحلية -->
@@ -806,6 +809,15 @@
     let FILTER = { q: "", cat: "", status: "" };
     let categoryChart, statusChart;
 
+    // بيانات تجريبية
+    const sampleData = [
+      { code: "BRK-001", name: "بريك أمامي", category: "فرامل", location: "رف A1", supplier: "شركة الفرامل", min: 5, qty: 3, price: 2500 },
+      { code: "OIL-002", name: "زيت محرك", category: "زيوت", location: "رف B2", supplier: "شركة الزيوت", min: 10, qty: 15, price: 800 },
+      { code: "FLT-003", name: "فلتر هواء", category: "فلاتر", location: "رف C3", supplier: "شركة الفلاتر", min: 8, qty: 5, price: 1200 },
+      { code: "BLT-004", name: "سير محرك", category: "إكسسوارات", location: "رف D4", supplier: "شركة الإكسسوارات", min: 3, qty: 7, price: 1500 },
+      { code: "SPK-005", name: "شمعة احتراق", category: "إلكترونيات", location: "رف E5", supplier: "شركة الإلكترونيات", min: 12, qty: 20, price: 400 }
+    ];
+
     // ======== تهيئة الصفحة ========
     document.addEventListener('DOMContentLoaded', function() {
       initializeApp();
@@ -815,6 +827,10 @@
 
     // ======== وظائف التهيئة ========
     function initializeApp() {
+      const savedUrl = localStorage.getItem('inventory_script_url');
+      if (savedUrl) {
+        SCRIPT_URL = savedUrl;
+      }
       document.getElementById('scriptUrl').value = SCRIPT_URL;
     }
 
@@ -871,7 +887,10 @@
           headers: { "Content-Type": "application/json" }
         });
         
-        if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        if (!res.ok) {
+          const errorText = await res.text();
+          throw new Error(`HTTP ${res.status}: ${errorText}`);
+        }
         
         const data = await res.json();
         if (data.error) throw new Error(data.error);
@@ -894,14 +913,20 @@
         updateConnectionStatus(isConnected);
         
         if (isConnected) {
-          const { items, stats, cats } = await api("list");
-          ITEMS = items || [];
-          
-          // حفظ نسخة محلية للاستخدام دون اتصال
-          localStorage.setItem('inventory_items', JSON.stringify(ITEMS));
-          
-          renderStats(stats || {});
-          renderCats(cats || []);
+          try {
+            const { items, stats, cats } = await api("list");
+            ITEMS = items || [];
+            
+            // حفظ نسخة محلية للاستخدام دون اتصال
+            localStorage.setItem('inventory_items', JSON.stringify(ITEMS));
+            
+            renderStats(stats || {});
+            renderCats(cats || []);
+          } catch (apiError) {
+            console.error("API load error:", apiError);
+            // في حالة فشل تحميل البيانات من API، نستخدم البيانات المحلية
+            loadLocalData();
+          }
         } else {
           // استخدام البيانات المحلية
           loadLocalData();
@@ -925,6 +950,10 @@
       const savedItems = localStorage.getItem('inventory_items');
       if (savedItems) {
         ITEMS = JSON.parse(savedItems);
+      } else {
+        // استخدام البيانات التجريبية إذا لم توجد بيانات محفوظة
+        ITEMS = sampleData;
+        localStorage.setItem('inventory_items', JSON.stringify(ITEMS));
       }
       
       const stats = calculateStats(ITEMS);
@@ -1162,6 +1191,7 @@
       if (!SCRIPT_URL) return false;
       
       try {
+        // اختبار بسيط للاتصال
         const response = await fetch(SCRIPT_URL, {
           method: 'POST',
           body: JSON.stringify({ action: 'list' }),
@@ -1171,6 +1201,8 @@
         return response.ok;
       } catch (e) {
         console.error('Connection test failed:', e);
+        // إظهار رسالة المساعدة
+        document.getElementById('connectionHelp').style.display = 'block';
         return false;
       }
     }
@@ -1182,6 +1214,7 @@
       if (connected) {
         statusElement.innerHTML = '🟢 متصل بـ Google Sheets';
         statusElement.style.color = 'green';
+        document.getElementById('connectionHelp').style.display = 'none';
       } else {
         statusElement.innerHTML = '🔴 غير متصل - العمل في الوضع المحلي';
         statusElement.style.color = 'red';
@@ -1206,7 +1239,7 @@
           showSuccess('تم الاتصال بنجاح بـ Google Sheets');
           await loadAll();
         } else {
-          throw new Error('فشل الاتصال بـ Google Sheets');
+          throw new Error('فشل الاتصال بـ Google Sheets. يرجى التأكد من إعدادات النشر.');
         }
       } catch (e) {
         showError('تعذر الاتصال: ' + e.message);
@@ -1298,11 +1331,48 @@
     }
 
     function renderAlerts() {
-      // سيتم تنفيذ هذا لاحقاً
+      const container = document.getElementById('alertsContainer');
+      const lowItems = ITEMS.filter(item => Number(item.qty) <= Number(item.min));
+      
+      if (lowItems.length === 0) {
+        container.innerHTML = '<div class="alert info"><i class="fas fa-info-circle"></i> <div>جميع الأصناف ضمن المخزون الآمن</div></div>';
+        return;
+      }
+      
+      container.innerHTML = `
+        <div class="alert warning">
+          <i class="fas fa-exclamation-triangle"></i>
+          <div>هناك ${lowItems.length} أصناف تحت الحد الأدنى للمخزون تحتاج إلى مراجعة</div>
+        </div>
+      `;
     }
 
     function renderRecentActivities() {
-      // سيتم تنفيذ هذا لاحقاً
+      const container = document.getElementById('recentActivities');
+      let activities = [];
+      
+      if (!CONNECTED) {
+        // استخدام البيانات المحفوظة محلياً
+        activities = JSON.parse(localStorage.getItem('inventory_activities') || []);
+      }
+      
+      if (activities.length === 0) {
+        container.innerHTML = '<div class="empty">لا توجد حركات حديثة</div>';
+        return;
+      }
+      
+      container.innerHTML = activities.map(act => `
+        <div class="activity-item">
+          <div class="activity-type">
+            <i class="fas ${act.type === 'in' ? 'fa-arrow-down activity-in' : 'fa-arrow-up activity-out'}"></i>
+            <span>${act.type === 'in' ? 'إدخال' : 'إخراج'} ${act.qty} وحدة من ${act.item}</span>
+          </div>
+          <div>
+            <span>${act.note}</span>
+            <span class="activity-date">${act.date}</span>
+          </div>
+        </div>
+      `).join('');
     }
 
     // دالة لحذف العنصر
