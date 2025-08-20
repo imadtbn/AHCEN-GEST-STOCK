@@ -8,7 +8,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
       --primary: #2e7d32;
@@ -281,7 +280,6 @@
       font-weight: 500;
     }
 
-    /* Modal */
     .modal {
       position: fixed;
       inset: 0;
@@ -291,7 +289,6 @@
       justify-content: center;
       padding: 20px;
       z-index: 1000;
-      animation: fadeIn 0.3s ease;
     }
 
     .modal.show {
@@ -307,17 +304,6 @@
       max-height: 90vh;
       overflow-y: auto;
       box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-      animation: scaleIn 0.3s ease;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-
-    @keyframes scaleIn {
-      from { transform: scale(0.9); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
     }
 
     .box header {
@@ -364,7 +350,6 @@
       font-style: italic;
     }
 
-    /* الرسوم البيانية */
     .charts-container {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
@@ -385,7 +370,6 @@
       color: var(--primary-dark);
     }
 
-    /* التنبيهات */
     .alerts-container {
       margin: 20px 0;
     }
@@ -397,7 +381,6 @@
       display: flex;
       align-items: center;
       gap: 15px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     }
 
     .alert.warning {
@@ -418,7 +401,6 @@
       color: #1565c0;
     }
 
-    /* مؤشر التحميل */
     .loader {
       display: none;
       position: fixed;
@@ -444,7 +426,6 @@
       100% { left: 100%; }
     }
 
-    /* الحركات الحديثة */
     .recent-activity {
       margin-top: 30px;
     }
@@ -480,13 +461,11 @@
       font-size: 14px;
     }
 
-    /* إعدادات الاتصال */
     .connection-settings {
       background: #e8f5e9;
       padding: 20px;
       border-radius: var(--radius);
       margin-bottom: 25px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     }
 
     .connection-settings h3 {
@@ -501,7 +480,6 @@
       margin-bottom: 15px;
     }
 
-    /* إدارة البيانات المحلية */
     .local-data-actions {
       display: flex;
       gap: 12px;
@@ -509,7 +487,6 @@
       flex-wrap: wrap;
     }
     
-    /* رسائل الحالة */
     .status-message {
       padding: 15px;
       border-radius: var(--radius);
@@ -536,7 +513,6 @@
       border: 1px solid #ffcc80;
     }
 
-    /* تحسينات للجوال */
     @media (max-width: 768px) {
       .container {
         padding: 15px;
@@ -598,7 +574,6 @@
       </div>
     </header>
     
-    <!-- إعدادات الاتصال -->
     <div class="connection-settings card">
       <h3>إعدادات الاتصال بـ Google Sheets</h3>
       <div class="connection-form">
@@ -612,14 +587,12 @@
       </div>
     </div>
     
-    <!-- إدارة البيانات المحلية -->
     <div class="local-data-actions">
       <button class="info" id="btnExportLocal"><i class="fas fa-download"></i> تصدير البيانات المحلية</button>
       <button class="info" id="btnImportLocal"><i class="fas fa-upload"></i> استيراد إلى البيانات المحلية</button>
       <button class="danger" id="btnClearLocal"><i class="fas fa-trash"></i> مسح البيانات المحلية</button>
     </div>
     
-    <!-- البطاقات -->
     <section class="grid cards">
       <div class="card metric">
         <div>
@@ -651,7 +624,6 @@
       </div>
     </section>
     
-    <!-- الرسوم البيانية -->
     <div class="charts-container">
       <div class="chart-card">
         <h3>توزيع المخزون حسب الفئة</h3>
@@ -663,7 +635,6 @@
       </div>
     </div>
 
-    <!-- تنبيهات المخزون المنخفض -->
     <div class="alerts-container" id="alertsContainer">
       <div class="alert info">
         <i class="fas fa-info-circle"></i>
@@ -671,7 +642,6 @@
       </div>
     </div>
 
-    <!-- شريط الأدوات -->
     <div class="toolbar card">
       <div class="left">
         <input id="search" placeholder="🔎 بحث بالاسم، الرقم، المورد، أو الفئة"/>
@@ -691,7 +661,6 @@
       </div>
     </div>
 
-    <!-- الجدول -->
     <div class="table-wrap">
       <table id="tbl">
         <thead>
@@ -718,7 +687,6 @@
       </table>
     </div>
 
-    <!-- الحركات الحديثة -->
     <div class="card recent-activity">
       <h3>الحركات الحديثة</h3>
       <div id="recentActivities">
@@ -727,7 +695,6 @@
     </div>
   </div>
 
-  <!-- نافذة إضافة/تعديل صنف -->
   <div class="modal" id="modalItem">
     <div class="box">
       <header>
@@ -774,7 +741,6 @@
     </div>
   </div>
 
-  <!-- نافذة إدخال/إخراج -->
   <div class="modal" id="modalMove">
     <div class="box">
       <header>
@@ -807,7 +773,6 @@
     let CONNECTED = false;
     let ITEMS = [];
     let FILTER = { q: "", cat: "", status: "" };
-    let categoryChart, statusChart;
 
     // بيانات تجريبية
     const sampleData = [
@@ -825,7 +790,6 @@
       loadAll();
     });
 
-    // ======== وظائف التهيئة ========
     function initializeApp() {
       const savedUrl = localStorage.getItem('inventory_script_url');
       if (savedUrl) {
@@ -835,7 +799,6 @@
     }
 
     function setupEventListeners() {
-      // الأزرار الرئيسية
       document.getElementById('btnAdd').addEventListener('click', () => openItem());
       document.getElementById('btnIn').addEventListener('click', () => openMove('in'));
       document.getElementById('btnOut').addEventListener('click', () => openMove('out'));
@@ -843,23 +806,19 @@
       document.getElementById('btnExport').addEventListener('click', exportCSV);
       document.getElementById('btnConnect').addEventListener('click', connectToGoogleSheets);
       
-      // إدارة البيانات المحلية
       document.getElementById('btnExportLocal').addEventListener('click', exportLocalData);
       document.getElementById('btnImportLocal').addEventListener('click', importLocalData);
       document.getElementById('btnClearLocal').addEventListener('click', clearLocalData);
       
-      // النماذج
       document.getElementById('saveItem').addEventListener('click', saveItem);
       document.getElementById('applyMove').addEventListener('click', applyMove);
       
-      // إغلاق النماذج
       document.querySelectorAll('[data-close]').forEach(el => {
         el.addEventListener('click', () => {
           el.closest('.modal').classList.remove('show');
         });
       });
       
-      // البحث والتصفية
       document.getElementById('search').addEventListener('input', e => {
         FILTER.q = e.target.value;
         renderRows();
@@ -876,7 +835,6 @@
       });
     }
 
-    // ======== وظائف API ========
     async function api(action, payload = {}) {
       toggleLoader(true);
       try {
@@ -898,17 +856,15 @@
         return data;
       } catch (e) {
         console.error("API Error:", e);
-        throw new Error("فشل في الاتصال بالخادم: " + e.message);
+        throw new Error("فشل في الاتصال بالخادم");
       } finally {
         toggleLoader(false);
       }
     }
 
-    // ======== وظائف إدارة البيانات ========
     async function loadAll() {
       toggleLoader(true);
       try {
-        // محاولة الاتصال بـ Google Sheets أولاً
         const isConnected = await testConnection();
         updateConnectionStatus(isConnected);
         
@@ -916,31 +872,23 @@
           try {
             const { items, stats, cats } = await api("list");
             ITEMS = items || [];
-            
-            // حفظ نسخة محلية للاستخدام دون اتصال
             localStorage.setItem('inventory_items', JSON.stringify(ITEMS));
-            
             renderStats(stats || {});
             renderCats(cats || []);
           } catch (apiError) {
             console.error("API load error:", apiError);
-            // في حالة فشل تحميل البيانات من API، نستخدم البيانات المحلية
             loadLocalData();
           }
         } else {
-          // استخدام البيانات المحلية
           loadLocalData();
         }
         
         renderRows();
-        updateCharts();
         renderAlerts();
-        renderRecentActivities();
       } catch (e) {
         console.error("تعذّر تحميل البيانات: ", e);
         loadLocalData();
         updateConnectionStatus(false);
-        showError("تعذّر الاتصال بالخادم. يتم العمل في الوضع المحلي: " + e.message);
       } finally {
         toggleLoader(false);
       }
@@ -951,7 +899,6 @@
       if (savedItems) {
         ITEMS = JSON.parse(savedItems);
       } else {
-        // استخدام البيانات التجريبية إذا لم توجد بيانات محفوظة
         ITEMS = sampleData;
         localStorage.setItem('inventory_items', JSON.stringify(ITEMS));
       }
@@ -963,7 +910,6 @@
       renderCats(cats);
     }
 
-    // ======== وظائف العرض ========
     function renderStats(s) {
       document.getElementById('m_items').textContent = s.items || 0;
       document.getElementById('m_qty').textContent = s.totalQty || 0;
@@ -1015,7 +961,6 @@
       }).join('');
     }
 
-    // ======== وظائف النماذج ========
     function openItem(it = null) {
       document.getElementById('formTitle').textContent = it ? 'تعديل صنف' : 'إضافة صنف';
       document.getElementById('f_code').value = it?.code || '';
@@ -1027,9 +972,7 @@
       document.getElementById('f_qty').value = it?.qty || 0;
       document.getElementById('f_price').value = it?.price || 0;
       
-      // جعل رقم الصنف غير قابل للتعديل أثناء وضع التعديل
       document.getElementById('f_code').disabled = !!it;
-      
       showModal('modalItem', true);
     }
 
@@ -1055,7 +998,6 @@
         if (CONNECTED) {
           await api(isUpdate ? 'update' : 'add', { item: payload });
         } else {
-          // العمل محلياً
           if (isUpdate) {
             const index = ITEMS.findIndex(item => item.code === payload.code);
             if (index !== -1) ITEMS[index] = payload;
@@ -1097,7 +1039,6 @@
         if (CONNECTED) {
           await api('move', { code, qty: adjustedQty, note });
         } else {
-          // العمل محلياً
           const item = ITEMS.find(item => item.code === code);
           if (!item) throw new Error('لم يتم العثور على الصنف');
           
@@ -1107,7 +1048,6 @@
           item.qty = newQty;
           localStorage.setItem('inventory_items', JSON.stringify(ITEMS));
           
-          // تسجيل الحركة
           const activities = JSON.parse(localStorage.getItem('inventory_activities') || '[]');
           activities.unshift({
             type: MOVE_TYPE,
@@ -1127,50 +1067,23 @@
       }
     }
 
-    // ======== وظائف مساعدة ========
-    function val(id) {
-      return document.getElementById(id).value.trim();
-    }
-    
-    function num(id) {
-      return Number(document.getElementById(id).value || 0);
-    }
-    
-    function showModal(id, show) {
-      document.getElementById(id).classList.toggle('show', show);
-    }
-    
-    function toggleLoader(show) {
-      document.getElementById('mainLoader').style.display = show ? 'block' : 'none';
-    }
-    
-    function showError(msg) {
-      alert('❌ ' + msg);
-    }
-    
-    function showSuccess(msg) {
-      alert('✅ ' + msg);
-    }
-    
-    function escapeHtml(s) {
-      return (s || '').replace(/[&<>"']/g, m => ({
-        "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;"
-      }[m]));
-    }
+    function val(id) { return document.getElementById(id).value.trim(); }
+    function num(id) { return Number(document.getElementById(id).value || 0); }
+    function showModal(id, show) { document.getElementById(id).classList.toggle('show', show); }
+    function toggleLoader(show) { document.getElementById('mainLoader').style.display = show ? 'block' : 'none'; }
+    function showError(msg) { alert('❌ ' + msg); }
+    function showSuccess(msg) { alert('✅ ' + msg); }
+    function escapeHtml(s) { return (s || '').replace(/[&<>"']/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m])); }
 
-    // ======== وظائف إضافية ========
     function matchFilter(it) {
       const q = FILTER.q.trim().toLowerCase();
       if (q) {
-        const searchStr = [it.code, it.name, it.category, it.location, it.supplier]
-          .join(' ').toLowerCase();
+        const searchStr = [it.code, it.name, it.category, it.location, it.supplier].join(' ').toLowerCase();
         if (!searchStr.includes(q)) return false;
       }
       if (FILTER.cat && it.category !== FILTER.cat) return false;
-      
       const status = it.qty <= (parseFloat(it.min) || 0) ? 'low' : 'ok';
       if (FILTER.status && FILTER.status !== status) return false;
-      
       return true;
     }
 
@@ -1178,30 +1091,20 @@
       const totalQty = items.reduce((sum, item) => sum + (Number(item.qty) || 0), 0);
       const totalValue = items.reduce((sum, item) => sum + (Number(item.qty) || 0) * (Number(item.price) || 0), 0);
       const lowCount = items.filter(item => (Number(item.qty) || 0) <= (Number(item.min) || 0)).length;
-      
-      return {
-        items: items.length,
-        totalQty,
-        totalValue,
-        lowCount
-      };
+      return { items: items.length, totalQty, totalValue, lowCount };
     }
 
     async function testConnection() {
       if (!SCRIPT_URL) return false;
-      
       try {
-        // اختبار بسيط للاتصال
         const response = await fetch(SCRIPT_URL, {
           method: 'POST',
           body: JSON.stringify({ action: 'list' }),
           headers: { 'Content-Type': 'application/json' }
         });
-        
         return response.ok;
       } catch (e) {
         console.error('Connection test failed:', e);
-        // إظهار رسالة المساعدة
         document.getElementById('connectionHelp').style.display = 'block';
         return false;
       }
@@ -1210,7 +1113,6 @@
     function updateConnectionStatus(connected) {
       const statusElement = document.getElementById('connectionStatus');
       if (!statusElement) return;
-      
       if (connected) {
         statusElement.innerHTML = '🟢 متصل بـ Google Sheets';
         statusElement.style.color = 'green';
@@ -1223,13 +1125,9 @@
 
     async function connectToGoogleSheets() {
       const url = document.getElementById('scriptUrl').value.trim();
-      if (!url) {
-        return showError('يرجى إدخال رابط Web App');
-      }
-      
+      if (!url) return showError('يرجى إدخال رابط Web App');
       SCRIPT_URL = url;
       localStorage.setItem('inventory_script_url', url);
-      
       toggleLoader(true);
       try {
         const isConnected = await testConnection();
@@ -1250,18 +1148,13 @@
     }
 
     function exportLocalData() {
-      const data = {
-        items: ITEMS,
-        activities: JSON.parse(localStorage.getItem('inventory_activities') || [])
-      };
-      
+      const data = { items: ITEMS, activities: JSON.parse(localStorage.getItem('inventory_activities') || []) };
       const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
       a.download = 'inventory_backup.json';
       a.click();
       URL.revokeObjectURL(a.href);
-      
       showSuccess('تم تصدير البيانات المحلية بنجاح');
     }
 
@@ -1269,45 +1162,36 @@
       const input = document.createElement('input');
       input.type = 'file';
       input.accept = '.json';
-      
       input.onchange = function(event) {
         const file = event.target.files[0];
         if (!file) return;
-        
         const reader = new FileReader();
         reader.onload = function(e) {
           try {
             const data = JSON.parse(e.target.result);
-            
             if (data.items) {
               ITEMS = data.items;
               localStorage.setItem('inventory_items', JSON.stringify(ITEMS));
             }
-            
             if (data.activities) {
               localStorage.setItem('inventory_activities', JSON.stringify(data.activities));
             }
-            
             loadAll();
             showSuccess('تم استيراد البيانات بنجاح');
           } catch (e) {
             showError('فشل استيراد البيانات: ' + e.message);
           }
         };
-        
         reader.readAsText(file);
       };
-      
       input.click();
     }
 
     function clearLocalData() {
       if (!confirm('هل أنت متأكد من مسح جميع البيانات المحلية؟ لا يمكن التراجع عن هذا الإجراء.')) return;
-      
       localStorage.removeItem('inventory_items');
       localStorage.removeItem('inventory_activities');
       ITEMS = [];
-      
       loadAll();
       showSuccess('تم مسح البيانات المحلية بنجاح');
     }
@@ -1317,7 +1201,6 @@
       const rows = [cols.join(',')].concat(ITEMS.map(it => 
         cols.map(c => `"${String(it[c] || '').replace(/"/g, '""')}"`).join(',')
       ));
-      
       const blob = new Blob(["\ufeff" + rows.join('\n')], {type: 'text/csv;charset=utf-8;'});
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
@@ -1326,59 +1209,18 @@
       URL.revokeObjectURL(a.href);
     }
 
-    function updateCharts() {
-      // سيتم تنفيذ هذا لاحقاً
-    }
-
     function renderAlerts() {
       const container = document.getElementById('alertsContainer');
       const lowItems = ITEMS.filter(item => Number(item.qty) <= Number(item.min));
-      
       if (lowItems.length === 0) {
         container.innerHTML = '<div class="alert info"><i class="fas fa-info-circle"></i> <div>جميع الأصناف ضمن المخزون الآمن</div></div>';
         return;
       }
-      
-      container.innerHTML = `
-        <div class="alert warning">
-          <i class="fas fa-exclamation-triangle"></i>
-          <div>هناك ${lowItems.length} أصناف تحت الحد الأدنى للمخزون تحتاج إلى مراجعة</div>
-        </div>
-      `;
+      container.innerHTML = `<div class="alert warning"><i class="fas fa-exclamation-triangle"></i><div>هناك ${lowItems.length} أصناف تحت الحد الأدنى للمخزون تحتاج إلى مراجعة</div></div>`;
     }
 
-    function renderRecentActivities() {
-      const container = document.getElementById('recentActivities');
-      let activities = [];
-      
-      if (!CONNECTED) {
-        // استخدام البيانات المحفوظة محلياً
-        activities = JSON.parse(localStorage.getItem('inventory_activities') || []);
-      }
-      
-      if (activities.length === 0) {
-        container.innerHTML = '<div class="empty">لا توجد حركات حديثة</div>';
-        return;
-      }
-      
-      container.innerHTML = activities.map(act => `
-        <div class="activity-item">
-          <div class="activity-type">
-            <i class="fas ${act.type === 'in' ? 'fa-arrow-down activity-in' : 'fa-arrow-up activity-out'}"></i>
-            <span>${act.type === 'in' ? 'إدخال' : 'إخراج'} ${act.qty} وحدة من ${act.item}</span>
-          </div>
-          <div>
-            <span>${act.note}</span>
-            <span class="activity-date">${act.date}</span>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    // دالة لحذف العنصر
     async function delItem(code) {
       if (!confirm('تأكيد حذف الصنف؟')) return;
-      
       try {
         if (CONNECTED) {
           await api('delete', { code: decodeURIComponent(code) });
@@ -1386,7 +1228,6 @@
           ITEMS = ITEMS.filter(item => item.code !== decodeURIComponent(code));
           localStorage.setItem('inventory_items', JSON.stringify(ITEMS));
         }
-        
         await loadAll();
         showSuccess('تم حذف الصنف بنجاح');
       } catch (e) {
