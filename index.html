@@ -297,9 +297,9 @@ tbody tr:hover{background:#fafdfb}
         <h3>إعدادات النظام</h3>
       </header>
       <div style="margin-bottom: 16px;">
-        <label>APW google.com/macros/s/AKfy...................8S-execcr</label>
-        <input type="text" id="scriptUrl" placeholder="https://script.google.com/macros/s/AKfycby6drFxOxp8S-CKiSbaIockTtNCiRetO7T2zOfCY7M_A1okIZqImc84iZa7RtV6HKwu/exec" style="width: 100%; margin-top: 8px;">
-        <div class="hint">https://script.google.com/macros/s/AKfycby6drFxOxp8S-CKiSbaIockTtNCiRetO7T2zOfCY7M_A1okIZqImc84iZa7RtV6HKwu/exec</div>
+        <label>رابط Web App</label>
+        <input type="text" id="scriptUrl" placeholder="https://script.google.com/macros/s/..." style="width: 100%; margin-top: 8px;">
+        <div class="hint">ضع رابط Web App الخاص بك من Google Apps Script هنا</div>
       </div>
       
       <div style="margin-bottom: 16px;">
@@ -310,7 +310,7 @@ function doPost(e) {
     const data = JSON.parse(e.postData.contents);
     const action = data.action;
     
-    const sheet = SpreadsheetApp.getActiveSpreadsheet(1Tq6pMHdTfZU1ENhXNVQgqxZHafave5FTLP71JvECoI8).getActiveSheet(المخزون);
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
     
     // إنشاء الرؤوس إذا لم تكن موجودة
     if (sheet.getLastRow() === 0) {
