@@ -115,7 +115,10 @@ tbody tr:hover{background:#fafdfb}
 .setup-guide { margin: 20px 0; padding: 20px; background: #e8f5e9; border-radius: var(--radius); }
 .setup-steps { margin-left: 20px; }
 .setup-steps li { margin-bottom: 10px; }
-  </style>
+
+.backup-section { margin: 20px 0; padding: 20px; background: #e3f2fd; border-radius: var(--radius); }
+.backup-buttons { display: flex; gap: 10px; margin-top: 10px; }
+</style>
 </head>
 <body>
   <div class="loader" id="mainLoader"></div>
@@ -132,7 +135,7 @@ tbody tr:hover{background:#fafdfb}
         <div class="logo">⚙️</div>
         <div>
           <h1>نظام إدارة مخزن قطع الغيار</h1>
-          <div class="hint" id="connectionStatus">🔴 غير متصل - يرجى إعداد الاتصال</div>
+          <div class="hint" id="connectionStatus">🟢 يعمل محلياً - البيانات مخزنة على جهازك</div>
         </div>
       </div>
       <div class="actions">
@@ -140,22 +143,18 @@ tbody tr:hover{background:#fafdfb}
         <button class="secondary" id="btnIn">⬆️ إدخال مخزوني</button>
         <button class="secondary" id="btnOut">⬇️ إخراج مخزوني</button>
         <button class="warning" id="btnRefresh">↻ تحديث</button>
-        <button class="info" id="btnSettings"><i class="fas fa-cog"></i></button>
       </div>
     </header>
     
-    <!-- دليل الإعداد -->
-    <div class="card setup-guide" id="setupGuide">
-      <h3>دليل إعداد النظام</h3>
-      <ol class="setup-steps">
-        <li>أنشئ Google Sheet جديد من <a href="https://sheets.google.com" target="_blank">sheets.google.com</a></li>
-        <li>افتح قائمة Tools → Script editor</li>
-        <li>انسخ كود Google Apps Script من قسم الإعدادات في التطبيق</li>
-        <li>احفظ المشروع ثم انشرها كـ Web App</li>
-        <li>انسخ رابط النشر وأدخله في حقل الإعدادات</li>
-        <li>انقر على "فحص الاتصال"</li>
-      </ol>
-      <button onclick="showModal('modalSettings', true)">فتح إعدادات الاتصال</button>
+    <!-- قسم النسخ الاحتياطي -->
+    <div class="card backup-section">
+      <h3>النسخ الاحتياطي والاستعادة</h3>
+      <p>احفظ نسخة احتياطية من بياناتك على جهازك أو استعد منها عند الحاجة</p>
+      <div class="backup-buttons">
+        <button class="info" id="btnExportBackup"><i class="fas fa-download"></i> تصدير النسخة الاحتياطية</button>
+        <button class="secondary" id="btnImportBackup"><i class="fas fa-upload"></i> استيراد نسخة احتياطية</button>
+        <input type="file" id="fileInput" accept=".json" style="display: none;">
+      </div>
     </div>
     
     <!-- البطاقات -->
@@ -290,157 +289,7 @@ tbody tr:hover{background:#fafdfb}
     </div>
   </div>
 
-  <!-- نافذة الإعدادات -->
-  <div class="modal" id="modalSettings">
-    <div class="box">
-      <header>
-        <h3>إعدادات النظام</h3>
-      </header>
-      <div style="margin-bottom: 16px;">
-        <label>رابط Web App</label>
-        <input type="text" id="scriptUrl" placeholder="https://script.google.com/macros/s/..." style="width: 100%; margin-top: 8px;">
-        <div class="hint">ضع رابط Web App الخاص بك من Google Apps Script هنا</div>
-      </div>
-      
-      <div style="margin-bottom: 16px;">
-        <label>كود Google Apps Script</label>
-        <textarea id="scriptCode" style="width: 100%; height: 200px; margin-top: 8px; padding: 10px; font-family: monospace; border-radius: 8px; border: 1px solid #ddd;" readonly>
-function doPost(e) {
-  try {
-    const data = JSON.parse(e.postData.contents);
-    const action = data.action;
-    
-    const sheet = SpreadsheetApp.getActiveSpreadsheet(1Tq6pMHdTfZU1ENhXNVQgqxZHafave5FTLP71JvECoI8).getActiveSheet(المخزن);
-    
-    // إنشاء الرؤوس إذا لم تكن موجودة
-    if (sheet.getLastRow() === 0) {
-      sheet.appendRow(["كود", "الاسم", "الفئة", "الموقع", "المورد", "الحد الأدنى", "الكمية", "السعر", "تاريخ الإضافة", "آخر تحديث"]);
-    }
-    
-    if (action === "add" || action === "update") {
-      const item = data.item;
-      const rows = sheet.getDataRange().getValues();
-      let found = false;
-      
-      for (let i = 1; i < rows.length; i++) {
-        if (rows[i][0] === item.code) {
-          // تحديث العنصر الموجود
-          sheet.getRange(i+1, 2, 1, 8).setValues([[item.name, item.category, item.location, item.supplier, item.min, item.qty, item.price, new Date()]]);
-          found = true;
-          break;
-        }
-      }
-      
-      if (!found && action === "add") {
-        // إضافة عنصر جديد
-        sheet.appendRow([item.code, item.name, item.category, item.location, item.supplier, item.min, item.qty, item.price, new Date(), new Date()]);
-      }
-      
-      return ContentService.createTextOutput(JSON.stringify({success: true})).setMimeType(ContentService.MimeType.JSON);
-    }
-    else if (action === "list") {
-      const rows = sheet.getDataRange().getValues();
-      const items = [];
-      const categories = new Set();
-      
-      // تخطي الصف الأول (العناوين)
-      for (let i = 1; i < rows.length; i++) {
-        if (rows[i][0]) {
-          items.push({
-            code: rows[i][0],
-            name: rows[i][1],
-            category: rows[i][2],
-            location: rows[i][3],
-            supplier: rows[i][4],
-            min: rows[i][5],
-            qty: rows[i][6],
-            price: rows[i][7]
-          });
-          
-          if (rows[i][2]) categories.add(rows[i][2]);
-        }
-      }
-      
-      // حساب الإحصائيات
-      let totalQty = 0;
-      let totalValue = 0;
-      let lowCount = 0;
-      
-      items.forEach(item => {
-        totalQty += Number(item.qty) || 0;
-        totalValue += (Number(item.qty) || 0) * (Number(item.price) || 0);
-        if ((Number(item.qty) || 0) <= (Number(item.min) || 0)) lowCount++;
-      });
-      
-      return ContentService.createTextOutput(JSON.stringify({
-        items: items,
-        stats: {
-          items: items.length,
-          totalQty: totalQty,
-          totalValue: totalValue,
-          lowCount: lowCount
-        },
-        cats: Array.from(categories)
-      })).setMimeType(ContentService.MimeType.JSON);
-    }
-    else if (action === "delete") {
-      const code = data.code;
-      const rows = sheet.getDataRange().getValues();
-      
-      for (let i = 1; i < rows.length; i++) {
-        if (rows[i][0] === code) {
-          sheet.deleteRow(i+1);
-          break;
-        }
-      }
-      
-      return ContentService.createTextOutput(JSON.stringify({success: true})).setMimeType(ContentService.MimeType.JSON);
-    }
-    else if (action === "move") {
-      const code = data.code;
-      const qty = data.qty;
-      const rows = sheet.getDataRange().getValues();
-      
-      for (let i = 1; i < rows.length; i++) {
-        if (rows[i][0] === code) {
-          const currentQty = Number(rows[i][6]) || 0;
-          sheet.getRange(i+1, 7).setValue(Math.max(0, currentQty + qty));
-          sheet.getRange(i+1, 10).setValue(new Date()); // تحديث وقت التعديل
-          break;
-        }
-      }
-      
-      return ContentService.createTextOutput(JSON.stringify({success: true})).setMimeType(ContentService.MimeType.JSON);
-    }
-    else if (action === "test") {
-      return ContentService.createTextOutput(JSON.stringify({success: true, message: "الاتصال ناجح"})).setMimeType(ContentService.MimeType.JSON);
-    }
-    
-    return ContentService.createTextOutput(JSON.stringify({error: "Action not found"})).setMimeType(ContentService.MimeType.JSON);
-  } catch (error) {
-    return ContentService.createTextOutput(JSON.stringify({error: error.message})).setMimeType(ContentService.MimeType.JSON);
-  }
-}
-
-function doGet() {
-  return ContentService.createTextOutput(JSON.stringify({error: "Use POST requests only"})).setMimeType(ContentService.MimeType.JSON);
-}
-        </textarea>
-        <div class="hint">انسخ هذا الكود والصقه في نافذة Google Apps Script</div>
-      </div>
-      
-      <footer>
-        <button onclick="saveSettings()">💾 حفظ الإعدادات</button>
-        <button class="secondary" data-close>إلغاء</button>
-      </footer>
-    </div>
-  </div>
-
   <script>
-    /* ======== إعدادات الربط مع Google Apps Script ======== */
-    let SCRIPT_URL = localStorage.getItem('scriptUrl') || "";
-    let IS_ONLINE = false;
-
     /* ======== حالة التطبيق ======== */
     let ITEMS = []; // الأصناف
     let FILTER = { q:"", cat:"", status:"" };
@@ -448,58 +297,8 @@ function doGet() {
 
     // تهيئة الصفحة
     function init() {
-      document.getElementById('scriptUrl').value = SCRIPT_URL;
-      
-      if (SCRIPT_URL) {
-        testConnection();
-      } else {
-        document.getElementById('connectionStatus').textContent = '🔴 غير متصل - يرجى إعداد الاتصال';
-        document.getElementById('connectionStatus').style.color = 'var(--danger)';
-        document.getElementById('setupGuide').style.display = 'block';
-      }
-      
       loadLocalData();
       setupEventListeners();
-    }
-
-    // اختبار الاتصال
-    async function testConnection() {
-      if (!SCRIPT_URL) {
-        showNotification('يرجى إدخال رابط Web App أولاً', 'error');
-        return;
-      }
-      
-      toggleLoader(true);
-      showNotification('جاري اختبار الاتصال...', 'info');
-      
-      try {
-        const res = await fetch(SCRIPT_URL, { 
-          method: "POST", 
-          body: JSON.stringify({ action: "test" }),
-          headers: { "Content-Type": "application/json" }
-        });
-        
-        if (res.ok) {
-          const data = await res.json();
-          IS_ONLINE = true;
-          document.getElementById('connectionStatus').textContent = '🟢 متصل - العمل مع Google Sheets';
-          document.getElementById('connectionStatus').style.color = 'var(--primary)';
-          document.getElementById('setupGuide').style.display = 'none';
-          showNotification('تم الاتصال بنجاح', 'success');
-          loadAll();
-        } else {
-          throw new Error('فشل الاتصال');
-        }
-      } catch (e) {
-        IS_ONLINE = false;
-        document.getElementById('connectionStatus').textContent = '🔴 غير متصل - العمل في الوضع المحلي';
-        document.getElementById('connectionStatus').style.color = 'var(--danger)';
-        document.getElementById('setupGuide').style.display = 'block';
-        showNotification('تعذر الاتصال، العمل في الوضع المحلي', 'warning');
-        loadLocalData();
-      } finally {
-        toggleLoader(false);
-      }
     }
 
     // تحميل البيانات المحلية
@@ -511,123 +310,21 @@ function doGet() {
         updateStats();
         updateCharts();
         renderAlerts();
+        renderRecentActivities();
+        showNotification('تم تحميل البيانات المحلية', 'success');
       } else {
         // بيانات افتراضية فارغة
         ITEMS = [];
         renderRows();
         updateStats();
+        showNotification('مرحباً! يمكنك بدء إضافة الأصناف إلى المخزون', 'info');
       }
     }
 
     // حفظ البيانات محلياً
     function saveLocalData() {
       localStorage.setItem('inventoryData', JSON.stringify(ITEMS));
-    }
-
-    // مساعد لطلبات الشبكة
-    async function api(action, payload={}){
-      if (!IS_ONLINE) {
-        // العمل في الوضع المحلي
-        return simulateApi(action, payload);
-      }
-      
-      toggleLoader(true);
-      const body = JSON.stringify({ action, ...payload });
-      try {
-        const res = await fetch(SCRIPT_URL, { method:"POST", body, headers:{"Content-Type":"application/json"} });
-        if(!res.ok) throw new Error("HTTP " + res.status);
-        return await res.json();
-      } catch (e) {
-        IS_ONLINE = false;
-        showNotification('فشل الاتصال، الانتقال للوضع المحلي', 'error');
-        return simulateApi(action, payload);
-      } finally {
-        toggleLoader(false);
-      }
-    }
-
-    // محاكاة API للعمل بدون اتصال
-    function simulateApi(action, payload) {
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          let result = {};
-          
-          switch(action) {
-            case "list":
-              result = { 
-                items: ITEMS,
-                stats: calculateStats(),
-                cats: [...new Set(ITEMS.map(item => item.category))].filter(Boolean)
-              };
-              break;
-              
-            case "add":
-              const newItem = payload.item;
-              // تجنب التكرار
-              if (!ITEMS.some(item => item.code === newItem.code)) {
-                ITEMS.push(newItem);
-                saveLocalData();
-              }
-              result = { success: true };
-              break;
-              
-            case "update":
-              const updatedItem = payload.item;
-              const index = ITEMS.findIndex(item => item.code === updatedItem.code);
-              if (index !== -1) {
-                ITEMS[index] = updatedItem;
-                saveLocalData();
-              }
-              result = { success: true };
-              break;
-              
-            case "delete":
-              ITEMS = ITEMS.filter(item => item.code !== payload.code);
-              saveLocalData();
-              result = { success: true };
-              break;
-              
-            case "move":
-              const itemCode = payload.code;
-              const moveQty = payload.qty;
-              const itemIndex = ITEMS.findIndex(item => item.code === itemCode);
-              
-              if (itemIndex !== -1) {
-                ITEMS[itemIndex].qty = Math.max(0, (Number(ITEMS[itemIndex].qty) || 0) + moveQty);
-                saveLocalData();
-                
-                // تسجيل الحركة
-                const activities = JSON.parse(localStorage.getItem('recentActivities') || '[]');
-                activities.unshift({
-                  type: moveQty > 0 ? 'in' : 'out',
-                  item: itemCode,
-                  qty: Math.abs(moveQty),
-                  note: payload.note || '',
-                  date: new Date().toLocaleString('ar-DZ')
-                });
-                localStorage.setItem('recentActivities', JSON.stringify(activities.slice(0, 10)));
-              }
-              result = { success: true };
-              break;
-          }
-          
-          resolve(result);
-        }, 500); // محاكاة زمن الانتظار
-      });
-    }
-
-    // تحميل البيانات والإحصاءات
-    async function loadAll(){
-      try{
-        const { items, stats, cats } = await api("list");
-        ITEMS = items || [];
-        renderRows();
-        renderStats(stats||calculateStats());
-        renderCats(cats||[]);
-        updateCharts();
-        renderAlerts();
-        renderRecentActivities();
-      }catch(e){ showError("تعذّر تحميل البيانات: " + e.message); }
+      showNotification('تم حفظ البيانات', 'success');
     }
 
     // حساب الإحصائيات محلياً
@@ -644,9 +341,9 @@ function doGet() {
       };
     }
 
-    function renderCats(cats){
-      const sel = document.getElementById('filterCat');
-      sel.innerHTML = '<option value="">كل الفئات</option>' + (cats||[]).map(c=>`<option>${c}</option>`).join("");
+    function updateStats() {
+      const stats = calculateStats();
+      renderStats(stats);
     }
 
     function renderStats(s){
@@ -656,9 +353,10 @@ function doGet() {
       document.getElementById('m_low').textContent = s.lowCount||0;
     }
 
-    function updateStats() {
-      const stats = calculateStats();
-      renderStats(stats);
+    function renderCats(){
+      const categories = [...new Set(ITEMS.map(item => item.category).filter(Boolean))];
+      const sel = document.getElementById('filterCat');
+      sel.innerHTML = '<option value="">كل الفئات</option>' + categories.map(c=>`<option>${c}</option>`).join("");
     }
 
     function matchFilter(it){
@@ -676,7 +374,9 @@ function doGet() {
     function renderRows(){
       const tbody = document.getElementById('rows');
       if(!ITEMS.length){ tbody.innerHTML = '<tr><td colspan="12" class="empty">لا توجد بيانات</td></tr>'; return; }
-      let i=0; const rows = ITEMS.filter(matchFilter).map(it=>{
+      
+      let i=0; 
+      const rows = ITEMS.filter(matchFilter).map(it=>{
         const value = (Number(it.qty||0)*Number(it.price||0));
         const low = Number(it.qty||0) <= Number(it.min||0);
         return `<tr>
@@ -697,7 +397,9 @@ function doGet() {
           </td>
         </tr>`;
       }).join('');
+      
       tbody.innerHTML = rows || '<tr><td colspan="12" class="empty">لا نتائج مطابقة</td></tr>';
+      renderCats();
     }
 
     function escapeHtml(s=''){return s.replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]))}
@@ -718,28 +420,50 @@ function doGet() {
       document.getElementById('f_code').disabled = !!it;
     }
 
-    async function saveItem(){
+    function saveItem(){
       const payload = {
         code: val('f_code'), name: val('f_name'), category: val('f_cat'), location: val('f_loc'), supplier: val('f_supplier'),
         min: num('f_min'), qty: num('f_qty'), price: num('f_price')
       };
+      
       if(!payload.code || !payload.name) return showError('رقم الصنف واسم القطعة حقول إجبارية');
-      try{
-        const mode = document.getElementById('f_code').disabled ? 'update' : 'add';
-        await api(mode, { item: payload });
-        await loadAll();
-        showModal('modalItem', false);
-        showSuccess('تم حفظ الصنف بنجاح');
-      }catch(e){ showError('فشل الحفظ: '+e.message); }
+      
+      const isEditMode = document.getElementById('f_code').disabled;
+      
+      if (isEditMode) {
+        // تحديث العنصر الموجود
+        const index = ITEMS.findIndex(item => item.code === payload.code);
+        if (index !== -1) {
+          ITEMS[index] = payload;
+        }
+      } else {
+        // إضافة عنصر جديد
+        // التأكد من عدم وجود كود مكرر
+        if (ITEMS.some(item => item.code === payload.code)) {
+          return showError('رقم الصنف موجود مسبقاً');
+        }
+        ITEMS.push(payload);
+      }
+      
+      saveLocalData();
+      renderRows();
+      updateStats();
+      updateCharts();
+      renderAlerts();
+      showModal('modalItem', false);
+      showSuccess('تم حفظ الصنف بنجاح');
     }
 
-    async function delItem(code){
+    function delItem(code){
       if(!confirm('تأكيد حذف الصنف؟')) return;
-      try{
-        await api('delete', { code: decodeURIComponent(code) });
-        await loadAll();
-        showSuccess('تم حذف الصنف بنجاح');
-      }catch(e){ showError('تعذّر الحذف: '+e.message); }
+      
+      ITEMS = ITEMS.filter(item => item.code !== decodeURIComponent(code));
+      saveLocalData();
+      renderRows();
+      updateStats();
+      updateCharts();
+      renderAlerts();
+      showSuccess('تم حذف الصنف بنجاح');
     }
 
     // حركة مخزونية
@@ -750,17 +474,39 @@ function doGet() {
       showModal('modalMove', true);
     }
 
-    async function applyMove(){
+    function applyMove(){
       const code = val('mv_code');
       const qty  = num('mv_qty');
       const note = val('mv_note');
+      
       if(!code || !qty) return showError('رقم الصنف والكمية مطلوبان');
-      try{
-        await api('move', { code, qty:(MOVE_TYPE==='out'?-Math.abs(qty):Math.abs(qty)), note });
-        await loadAll();
-        showModal('modalMove', false);
-        showSuccess('تم تنفيذ الحركة بنجاح');
-      }catch(e){ showError('تعذّر تنفيذ الحركة: '+e.message); }
+      
+      const itemIndex = ITEMS.findIndex(item => item.code === code);
+      if (itemIndex === -1) return showError('رقم الصنف غير موجود');
+      
+      const moveQty = MOVE_TYPE === 'out' ? -Math.abs(qty) : Math.abs(qty);
+      ITEMS[itemIndex].qty = Math.max(0, (Number(ITEMS[itemIndex].qty) || 0) + moveQty);
+      
+      // تسجيل الحركة
+      const activities = JSON.parse(localStorage.getItem('recentActivities') || '[]');
+      activities.unshift({
+        type: MOVE_TYPE,
+        item: code,
+        qty: Math.abs(qty),
+        note: note,
+        date: new Date().toLocaleString('ar-DZ')
+      });
+      // الاحتفاظ بأخر 10 حركات فقط
+      localStorage.setItem('recentActivities', JSON.stringify(activities.slice(0, 10)));
+      
+      saveLocalData();
+      renderRows();
+      updateStats();
+      updateCharts();
+      renderAlerts();
+      renderRecentActivities();
+      showModal('modalMove', false);
+      showSuccess('تم تنفيذ الحركة بنجاح');
     }
 
     // تصدير إلى Excel
@@ -898,16 +644,64 @@ function doGet() {
       `).join('');
     }
 
-    // إعدادات النظام
-    function saveSettings() {
-      const newUrl = document.getElementById('scriptUrl').value;
-      if (newUrl) {
-        SCRIPT_URL = newUrl;
-        localStorage.setItem('scriptUrl', newUrl);
-        showNotification('تم حفظ الإعدادات بنجاح', 'success');
-        showModal('modalSettings', false);
-        testConnection();
-      }
+    // نسخ احتياطي
+    function exportBackup() {
+      const backupData = {
+        items: ITEMS,
+        activities: JSON.parse(localStorage.getItem('recentActivities') || '[]'),
+        exportDate: new Date().toLocaleString('ar-DZ')
+      };
+      
+      const dataStr = JSON.stringify(backupData, null, 2);
+      const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+      
+      const exportFileDefaultName = `نسخة_احتياطية_المخزون_${new Date().toISOString().split('T')[0]}.json`;
+      
+      const linkElement = document.createElement('a');
+      linkElement.setAttribute('href', dataUri);
+      linkElement.setAttribute('download', exportFileDefaultName);
+      linkElement.click();
+      
+      showSuccess('تم تصدير النسخة الاحتياطية بنجاح');
+    }
+
+    function importBackup() {
+      document.getElementById('fileInput').click();
+    }
+
+    function handleFileSelect(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const backupData = JSON.parse(e.target.result);
+          
+          if (backupData.items) {
+            if (!confirm('سيتم استبدال جميع البيانات الحالية. هل تريد المتابعة؟')) return;
+            
+            ITEMS = backupData.items;
+            if (backupData.activities) {
+              localStorage.setItem('recentActivities', JSON.stringify(backupData.activities));
+            }
+            
+            saveLocalData();
+            renderRows();
+            updateStats();
+            updateCharts();
+            renderAlerts();
+            renderRecentActivities();
+            
+            showSuccess('تم استيراد النسخة الاحتياطية بنجاح');
+          } else {
+            showError('ملف النسخة الاحتياطية غير صالح');
+          }
+        } catch (error) {
+          showError('فشل في قراءة الملف: ' + error.message);
+        }
+      };
+      reader.readAsText(file);
     }
 
     // أدوات عامة
@@ -921,7 +715,6 @@ function doGet() {
         document.body.style.overflow = 'auto';
       }
     }
-    function toggleLoader(show){ document.getElementById('mainLoader').style.display = show ? 'block' : 'none'; }
     
     function showError(msg){ 
       showNotification(msg, 'error');
@@ -950,9 +743,11 @@ function doGet() {
       document.getElementById('btnAdd').onclick = ()=>openItem();
       document.getElementById('btnIn').onclick  = ()=>openMove('in');
       document.getElementById('btnOut').onclick = ()=>openMove('out');
-      document.getElementById('btnRefresh').onclick = loadAll;
+      document.getElementById('btnRefresh').onclick = ()=>{loadLocalData(); showNotification('تم تحديث البيانات', 'info');};
       document.getElementById('btnExport').onclick = exportToExcel;
-      document.getElementById('btnSettings').onclick = ()=>showModal('modalSettings', true);
+      document.getElementById('btnExportBackup').onclick = exportBackup;
+      document.getElementById('btnImportBackup').onclick = importBackup;
+      document.getElementById('fileInput').onchange = handleFileSelect;
       
       document.querySelectorAll('[data-close]').forEach(el=>el.onclick=()=>{
         el.closest('.modal').classList.remove('show');
