@@ -290,7 +290,7 @@ tbody tr:hover{background:#fafdfb}
       </header>
       <div style="margin-bottom: 16px;">
         <label>رابط Web App</label>
-        <input type="text" id="scriptUrl" placeholder="https://script.google.com/macros/s/AKfycbwTj6h0mmiL8LV3T0O9VfgVGYUtoiLe87WhVlDKMT9-wDfLm0DSyBMo50xjzh-FM4kO/exec" style="width: 100%; margin-top: 8px;">
+        <input type="text" id="scriptUrl" placeholder="https://script.google.com/macros/s/AKfycbxXEwdY-yP3T4O7oFVqvd4T7N1_wkdRVcxps6y7Au7mPNP-ccKQTv6zZ3kIDrK_tiExvw/exec" style="width: 100%; margin-top: 8px;">
         <div class="hint">https://script.google.com/macros/s/AKfycbwTj6h0mmiL8LV3T0O9VfgVGYUtoiLe87WhVlDKMT9-wDfLm0DSyBMo50xjzh-FM4kO/exec</div>
       </div>
       <footer>
@@ -302,520 +302,129 @@ tbody tr:hover{background:#fafdfb}
 
   <script>
     /* ======== إعدادات الربط مع Google Apps Script ======== */
-    let SCRIPT_URL = localStorage.getItem('scriptUrl') || "https://script.google.com/macros/s/AKfycbwTj6h0mmiL8LV3T0O9VfgVGYUtoiLe87WhVlDKMT9-wDfLm0DSyBMo50xjzh-FM4kO/exec";
-    let IS_ONLINE = false;
-
-    /* ======== حالة التطبيق ======== */
-    let ITEMS = []; // الأصناف
-    let FILTER = { q:"", cat:"", status:"" };
-    let categoryChart, statusChart;
-
-    // تهيئة الصفحة
-    function init() {
-      document.getElementById('scriptUrl').value = SCRIPT_URL;
-      testConnection();
-      loadLocalData();
-      setupEventListeners();
+function doPost(e) {
+  try {
+    const data = JSON.parse(e.postData.contents);
+    const action = data.action;
+    
+    // الحصول على الجدول المحدد باستخدام ID
+    const spreadsheetId = "1Tq6pMHdTfZU1ENhXNVQgqxZHafave5FTLP71JvECoI8";
+    const spreadsheet = SpreadsheetApp.openById(spreadsheetId);
+    const sheet = spreadsheet.getSheetByName("المخزن") || spreadsheet.getSheets()[0];
+    
+    // إنشاء الرؤوس إذا لم تكن موجودة
+    if (sheet.getLastRow() === 0) {
+      sheet.appendRow(["كود", "الاسم", "الفئة", "الموقع", "المورد", "الحد الأدنى", "الكمية", "السعر", "تاريخ الإضافة", "آخر تحديث"]);
     }
-
-    // اختبار الاتصال
-    async function testConnection() {
-      toggleLoader(true);
-      showNotification('جاري اختبار الاتصال...', 'info');
+    
+    if (action === "add" || action === "update") {
+      const item = data.item;
+      const rows = sheet.getDataRange().getValues();
+      let found = false;
       
-      try {
-        const res = await fetch(SCRIPT_URL, { 
-          method: "POST", 
-          body: JSON.stringify({ action: "test" }),
-          headers: { "Content-Type": "application/json" }
-        });
-        
-        if (res.ok) {
-          IS_ONLINE = true;
-          document.getElementById('connectionStatus').textContent = '🟢 متصل - العمل مع Google Sheets';
-          document.getElementById('connectionStatus').style.color = 'var(--primary)';
-          showNotification('تم الاتصال بنجاح', 'success');
-          loadAll();
-        } else {
-          throw new Error('فشل الاتصال');
+      for (let i = 1; i < rows.length; i++) {
+        if (rows[i][0] === item.code) {
+          // تحديث العنصر الموجود
+          sheet.getRange(i+1, 2, 1, 8).setValues([[item.name, item.category, item.location, item.supplier, item.min, item.qty, item.price, new Date()]]);
+          found = true;
+          break;
         }
-      } catch (e) {
-        IS_ONLINE = false;
-        document.getElementById('connectionStatus').textContent = '🔴 غير متصل - العمل في الوضع المحلي';
-        document.getElementById('connectionStatus').style.color = 'var(--danger)';
-        showNotification('تعذر الاتصال، العمل في الوضع المحلي', 'warning');
-        loadLocalData();
-      } finally {
-        toggleLoader(false);
-      }
-    }
-
-    // تحميل البيانات المحلية
-    function loadLocalData() {
-      const localData = localStorage.getItem('inventoryData');
-      if (localData) {
-        ITEMS = JSON.parse(localData);
-        renderRows();
-        updateStats();
-        updateCharts();
-        renderAlerts();
-      } else {
-        // بيانات افتراضية فارغة
-        ITEMS = [];
-        renderRows();
-        updateStats();
-      }
-    }
-
-    // حفظ البيانات محلياً
-    function saveLocalData() {
-      localStorage.setItem('inventoryData', JSON.stringify(ITEMS));
-    }
-
-    // مساعد لطلبات الشبكة
-    async function api(action, payload={}){
-      if (!IS_ONLINE) {
-        // العمل في الوضع المحلي
-        return simulateApi(action, payload);
       }
       
-      toggleLoader(true);
-      const body = JSON.stringify({ action, ...payload });
-      try {
-        const res = await fetch(SCRIPT_URL, { method:"POST", body, headers:{"Content-Type":"application/json"} });
-        if(!res.ok) throw new Error("HTTP " + res.status);
-        return await res.json();
-      } catch (e) {
-        IS_ONLINE = false;
-        showNotification('فشل الاتصال، الانتقال للوضع المحلي', 'error');
-        return simulateApi(action, payload);
-      } finally {
-        toggleLoader(false);
+      if (!found && action === "add") {
+        // إضافة عنصر جديد
+        sheet.appendRow([item.code, item.name, item.category, item.location, item.supplier, item.min, item.qty, item.price, new Date(), new Date()]);
       }
+      
+      return ContentService.createTextOutput(JSON.stringify({success: true})).setMimeType(ContentService.MimeType.JSON);
     }
-
-    // محاكاة API للعمل بدون اتصال
-    function simulateApi(action, payload) {
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          let result = {};
+    else if (action === "list") {
+      const rows = sheet.getDataRange().getValues();
+      const items = [];
+      const categories = new Set();
+      
+      // تخطي الصف الأول (العناوين)
+      for (let i = 1; i < rows.length; i++) {
+        if (rows[i][0]) {
+          items.push({
+            code: rows[i][0],
+            name: rows[i][1],
+            category: rows[i][2],
+            location: rows[i][3],
+            supplier: rows[i][4],
+            min: rows[i][5],
+            qty: rows[i][6],
+            price: rows[i][7]
+          });
           
-          switch(action) {
-            case "list":
-              result = { 
-                items: ITEMS,
-                stats: calculateStats(),
-                cats: [...new Set(ITEMS.map(item => item.category))].filter(Boolean)
-              };
-              break;
-              
-            case "add":
-              const newItem = payload.item;
-              // تجنب التكرار
-              if (!ITEMS.some(item => item.code === newItem.code)) {
-                ITEMS.push(newItem);
-                saveLocalData();
-              }
-              result = { success: true };
-              break;
-              
-            case "update":
-              const updatedItem = payload.item;
-              const index = ITEMS.findIndex(item => item.code === updatedItem.code);
-              if (index !== -1) {
-                ITEMS[index] = updatedItem;
-                saveLocalData();
-              }
-              result = { success: true };
-              break;
-              
-            case "delete":
-              ITEMS = ITEMS.filter(item => item.code !== payload.code);
-              saveLocalData();
-              result = { success: true };
-              break;
-              
-            case "move":
-              const itemCode = payload.code;
-              const moveQty = payload.qty;
-              const itemIndex = ITEMS.findIndex(item => item.code === itemCode);
-              
-              if (itemIndex !== -1) {
-                ITEMS[itemIndex].qty = Math.max(0, (Number(ITEMS[itemIndex].qty) || 0) + moveQty);
-                saveLocalData();
-                
-                // تسجيل الحركة
-                const activities = JSON.parse(localStorage.getItem('recentActivities') || '[]');
-                activities.unshift({
-                  type: moveQty > 0 ? 'in' : 'out',
-                  item: itemCode,
-                  qty: Math.abs(moveQty),
-                  note: payload.note || '',
-                  date: new Date().toLocaleString('ar-DZ')
-                });
-                localStorage.setItem('recentActivities', JSON.stringify(activities.slice(0, 10)));
-              }
-              result = { success: true };
-              break;
-          }
-          
-          resolve(result);
-        }, 500); // محاكاة زمن الانتظار
-      });
-    }
-
-    // تحميل البيانات والإحصاءات
-    async function loadAll(){
-      try{
-        const { items, stats, cats } = await api("list");
-        ITEMS = items || [];
-        renderRows();
-        renderStats(stats||calculateStats());
-        renderCats(cats||[]);
-        updateCharts();
-        renderAlerts();
-        renderRecentActivities();
-      }catch(e){ showError("تعذّر تحميل البيانات: " + e.message); }
-    }
-
-    // حساب الإحصائيات محلياً
-    function calculateStats() {
-      const totalQty = ITEMS.reduce((sum, item) => sum + (Number(item.qty) || 0), 0);
-      const totalValue = ITEMS.reduce((sum, item) => sum + ((Number(item.qty) || 0) * (Number(item.price) || 0)), 0);
-      const lowCount = ITEMS.filter(item => (Number(item.qty) || 0) <= (Number(item.min) || 0)).length;
-      
-      return {
-        items: ITEMS.length,
-        totalQty,
-        totalValue,
-        lowCount
-      };
-    }
-
-    function renderCats(cats){
-      const sel = document.getElementById('filterCat');
-      sel.innerHTML = '<option value="">كل الفئات</option>' + (cats||[]).map(c=>`<option>${c}</option>`).join("");
-    }
-
-    function renderStats(s){
-      document.getElementById('m_items').textContent = s.items||0;
-      document.getElementById('m_qty').textContent = s.totalQty||0;
-      document.getElementById('m_value').textContent = (s.totalValue||0).toLocaleString('ar-DZ')+" دج";
-      document.getElementById('m_low').textContent = s.lowCount||0;
-    }
-
-    function updateStats() {
-      const stats = calculateStats();
-      renderStats(stats);
-    }
-
-    function matchFilter(it){
-      const q = FILTER.q.trim().toLowerCase();
-      if(q){
-        const blob = [it.code,it.name,it.category,it.location,it.supplier].join(' ').toLowerCase();
-        if(!blob.includes(q)) return false;
-      }
-      if(FILTER.cat && it.category!==FILTER.cat) return false;
-      const status = (Number(it.qty) || 0) <= (Number(it.min) || 0) ? 'low' : 'ok';
-      if(FILTER.status && FILTER.status!==status) return false;
-      return true;
-    }
-
-    function renderRows(){
-      const tbody = document.getElementById('rows');
-      if(!ITEMS.length){ tbody.innerHTML = '<tr><td colspan="12" class="empty">لا توجد بيانات</td></tr>'; return; }
-      let i=0; const rows = ITEMS.filter(matchFilter).map(it=>{
-        const value = (Number(it.qty||0)*Number(it.price||0));
-        const low = Number(it.qty||0) <= Number(it.min||0);
-        return `<tr>
-          <td>${++i}</td>
-          <td><span class="badge">${escapeHtml(it.code||'')}</span></td>
-          <td>${escapeHtml(it.name||'')}</td>
-          <td>${escapeHtml(it.category||'')}</td>
-          <td>${escapeHtml(it.location||'')}</td>
-          <td>${escapeHtml(it.supplier||'')}</td>
-          <td>${it.min||0}</td>
-          <td>${it.qty||0}</td>
-          <td>${Number(it.price||0).toLocaleString('ar-DZ')}</td>
-          <td>${value.toLocaleString('ar-DZ')}</td>
-          <td>${low?'<span class="pill low">منخفض</span>':'<span class="pill ok">جيد</span>'}</td>
-          <td>
-            <button class="secondary" onclick='openItem(${JSON.stringify(it)})'>تعديل</button>
-            <button class="danger" onclick='delItem("${encodeURIComponent(it.code)}")'>حذف</button>
-          </td>
-        </tr>`;
-      }).join('');
-      tbody.innerHTML = rows || '<tr><td colspan="12" class="empty">لا نتائج مطابقة</td></tr>';
-    }
-
-    function escapeHtml(s=''){return s.replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]))}
-
-    // فتح نافذة الصنف (إضافة/تعديل)
-    function openItem(it){
-      document.getElementById('formTitle').textContent = it? 'تعديل صنف' : 'إضافة صنف';
-      document.getElementById('f_code').value = it?.code||'';
-      document.getElementById('f_name').value = it?.name||'';
-      document.getElementById('f_cat').value = it?.category||'';
-      document.getElementById('f_loc').value = it?.location||'';
-      document.getElementById('f_supplier').value = it?.supplier||'';
-      document.getElementById('f_min').value = it?.min||0;
-      document.getElementById('f_qty').value = it?.qty||0;
-      document.getElementById('f_price').value = it?.price||0;
-      showModal('modalItem', true);
-      // جعل رقم الصنف غير قابل للتعديل أثناء وضع التعديل
-      document.getElementById('f_code').disabled = !!it;
-    }
-
-    async function saveItem(){
-      const payload = {
-        code: val('f_code'), name: val('f_name'), category: val('f_cat'), location: val('f_loc'), supplier: val('f_supplier'),
-        min: num('f_min'), qty: num('f_qty'), price: num('f_price')
-      };
-      if(!payload.code || !payload.name) return showError('رقم الصنف واسم القطعة حقول إجبارية');
-      try{
-        const mode = document.getElementById('f_code').disabled ? 'update' : 'add';
-        await api(mode, { item: payload });
-        await loadAll();
-        showModal('modalItem', false);
-        showSuccess('تم حفظ الصنف بنجاح');
-      }catch(e){ showError('فشل الحفظ: '+e.message); }
-    }
-
-    async function delItem(code){
-      if(!confirm('تأكيد حذف الصنف؟')) return;
-      try{
-        await api('delete', { code: decodeURIComponent(code) });
-        await loadAll();
-        showSuccess('تم حذف الصنف بنجاح');
-      }catch(e){ showError('تعذّر الحذف: '+e.message); }
-    }
-
-    // حركة مخزونية
-    let MOVE_TYPE = 'in';
-    function openMove(type){
-      MOVE_TYPE = type; // 'in' or 'out'
-      document.getElementById('moveTitle').textContent = type==='in' ? 'إدخال مخزوني' : 'إخراج مخزوني';
-      showModal('modalMove', true);
-    }
-
-    async function applyMove(){
-      const code = val('mv_code');
-      const qty  = num('mv_qty');
-      const note = val('mv_note');
-      if(!code || !qty) return showError('رقم الصنف والكمية مطلوبان');
-      try{
-        await api('move', { code, qty:(MOVE_TYPE==='out'?-Math.abs(qty):Math.abs(qty)), note });
-        await loadAll();
-        showModal('modalMove', false);
-        showSuccess('تم تنفيذ الحركة بنجاح');
-      }catch(e){ showError('تعذّر تنفيذ الحركة: '+e.message); }
-    }
-
-    // تصدير إلى Excel
-    function exportToExcel(){
-      if (!ITEMS.length) return showError('لا توجد بيانات للتصدير');
-      
-      try {
-        // إعداد البيانات للتصدير
-        const data = ITEMS.map(item => ({
-          'رقم الصنف': item.code,
-          'اسم القطعة': item.name,
-          'الفئة': item.category,
-          'الموقع': item.location,
-          'المورد': item.supplier,
-          'الحد الأدنى': item.min,
-          'الكمية': item.qty,
-          'سعر الوحدة': item.price,
-          'القيمة': (Number(item.qty) || 0) * (Number(item.price) || 0),
-          'الحالة': (Number(item.qty) || 0) <= (Number(item.min) || 0) ? 'منخفض' : 'جيد'
-        }));
-        
-        // إنشاء ورقة عمل
-        const ws = XLSX.utils.json_to_sheet(data);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'المخزون');
-        
-        // تصدير الملف
-        XLSX.writeFile(wb, 'جرد_المخزون.xlsx');
-        showSuccess('تم تصدير البيانات إلى Excel بنجاح');
-      } catch (e) {
-        showError('فشل في تصدير الملف: ' + e.message);
-      }
-    }
-
-    // إنشاء الرسوم البيانية
-    function updateCharts() {
-      // رسم توزيع المخزون حسب الفئة
-      const categories = {};
-      ITEMS.forEach(item => {
-        const cat = item.category || 'غير مصنف';
-        categories[cat] = (categories[cat] || 0) + (Number(item.qty) || 0);
-      });
-      
-      if (categoryChart) categoryChart.destroy();
-      const catCtx = document.getElementById('categoryChart').getContext('2d');
-      categoryChart = new Chart(catCtx, {
-        type: 'pie',
-        data: {
-          labels: Object.keys(categories),
-          datasets: [{
-            data: Object.values(categories),
-            backgroundColor: ['#2e7d32', '#1565c0', '#d32f2f', '#ffa000', '#7b1fa2', '#00897b', '#f57c00', '#5d4037']
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: {
-              position: 'left',
-              rtl: true
-            }
-          }
+          if (rows[i][2]) categories.add(rows[i][2]);
         }
+      }
+      
+      // حساب الإحصائيات
+      let totalQty = 0;
+      let totalValue = 0;
+      let lowCount = 0;
+      
+      items.forEach(item => {
+        totalQty += Number(item.qty) || 0;
+        totalValue += (Number(item.qty) || 0) * (Number(item.price) || 0);
+        if ((Number(item.qty) || 0) <= (Number(item.min) || 0)) lowCount++;
       });
       
-      // رسم الحالة المخزنية
-      let lowCount = 0, okCount = 0;
-      ITEMS.forEach(item => {
-        if (Number(item.qty) <= Number(item.min)) lowCount++;
-        else okCount++;
-      });
-      
-      if (statusChart) statusChart.destroy();
-      const statusCtx = document.getElementById('statusChart').getContext('2d');
-      statusChart = new Chart(statusCtx, {
-        type: 'doughnut',
-        data: {
-          labels: ['تحت الحد الأدنى', 'ضمن المخزون الآمن'],
-          datasets: [{
-            data: [lowCount, okCount],
-            backgroundColor: ['#ef6c00', '#2e7d32']
-          }]
+      return ContentService.createTextOutput(JSON.stringify({
+        items: items,
+        stats: {
+          items: items.length,
+          totalQty: totalQty,
+          totalValue: totalValue,
+          lowCount: lowCount
         },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: {
-              position: 'left',
-              rtl: true
-            }
-          }
+        cats: Array.from(categories)
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    else if (action === "delete") {
+      const code = data.code;
+      const rows = sheet.getDataRange().getValues();
+      
+      for (let i = 1; i < rows.length; i++) {
+        if (rows[i][0] === code) {
+          sheet.deleteRow(i+1);
+          break;
         }
-      });
-    }
-
-    // عرض التنبيهات
-    function renderAlerts() {
-      const container = document.getElementById('alertsContainer');
-      const lowItems = ITEMS.filter(item => Number(item.qty) <= Number(item.min));
-      
-      if (lowItems.length === 0) {
-        container.innerHTML = '<div class="alert info"><i class="fas fa-info-circle"></i> <div>جميع الأصناف ضمن المخزون الآمن</div></div>';
-        return;
       }
       
-      container.innerHTML = `
-        <div class="alert warning">
-          <i class="fas fa-exclamation-triangle"></i>
-          <div>هناك ${lowItems.length} أصناف تحت الحد الأدنى للمخزون تحتاج إلى مراجعة</div>
-        </div>
-      `;
+      return ContentService.createTextOutput(JSON.stringify({success: true})).setMimeType(ContentService.MimeType.JSON);
     }
-
-    // عرض الحركات الحديثة
-    function renderRecentActivities() {
-      const container = document.getElementById('recentActivities');
-      const activities = JSON.parse(localStorage.getItem('recentActivities') || '[]');
+    else if (action === "move") {
+      const code = data.code;
+      const qty = data.qty;
+      const rows = sheet.getDataRange().getValues();
       
-      if (activities.length === 0) {
-        container.innerHTML = '<div class="empty">لا توجد حركات حديثة</div>';
-        return;
+      for (let i = 1; i < rows.length; i++) {
+        if (rows[i][0] === code) {
+          const currentQty = Number(rows[i][6]) || 0;
+          sheet.getRange(i+1, 7).setValue(Math.max(0, currentQty + qty));
+          sheet.getRange(i+1, 10).setValue(new Date()); // تحديث وقت التعديل
+          break;
+        }
       }
       
-      container.innerHTML = activities.map(act => `
-        <div class="activity-item">
-          <div class="activity-type">
-            <i class="fas ${act.type === 'in' ? 'fa-arrow-down activity-in' : 'fa-arrow-up activity-out'}"></i>
-            <span>${act.type === 'in' ? 'إدخال' : 'إخراج'} ${act.qty} وحدة من ${act.item}</span>
-          </div>
-          <div>
-            <span class="activity-note">${act.note}</span>
-            <span class="activity-date">${act.date}</span>
-          </div>
-        </div>
-      `).join('');
+      return ContentService.createTextOutput(JSON.stringify({success: true})).setMimeType(ContentService.MimeType.JSON);
     }
-
-    // إعدادات النظام
-    function saveSettings() {
-      const newUrl = document.getElementById('scriptUrl').value;
-      if (newUrl) {
-        SCRIPT_URL = newUrl;
-        localStorage.setItem('scriptUrl', newUrl);
-        showNotification('تم حفظ الإعدادات بنجاح', 'success');
-        showModal('modalSettings', false);
-        testConnection();
-      }
-    }
-
-    // أدوات عامة
-    function val(id){return document.getElementById(id).value.trim();}
-    function num(id){return Number(document.getElementById(id).value||0)}
-    function showModal(id,show){ 
-      document.getElementById(id).classList.toggle('show', !!show); 
-      if (show) {
-        document.body.style.overflow = 'hidden';
-      } else {
-        document.body.style.overflow = 'auto';
-      }
-    }
-    function toggleLoader(show){ document.getElementById('mainLoader').style.display = show ? 'block' : 'none'; }
-    
-    function showError(msg){ 
-      showNotification(msg, 'error');
+    else if (action === "test") {
+      return ContentService.createTextOutput(JSON.stringify({success: true, message: "الاتصال ناجح"})).setMimeType(ContentService.MimeType.JSON);
     }
     
-    function showSuccess(msg){ 
-      showNotification(msg, 'success');
-    }
-    
-    function showNotification(message, type) {
-      const notification = document.getElementById('notification');
-      const text = document.getElementById('notificationText');
-      
-      notification.className = `notification ${type}`;
-      text.textContent = message;
-      
-      notification.classList.add('show');
-      
-      setTimeout(() => {
-        notification.classList.remove('show');
-      }, 3000);
-    }
+    return ContentService.createTextOutput(JSON.stringify({error: "Action not found"})).setMimeType(ContentService.MimeType.JSON);
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({error: error.message})).setMimeType(ContentService.MimeType.JSON);
+  }
+}
 
-    // إعداد مستمعي الأحداث
-    function setupEventListeners() {
-      document.getElementById('btnAdd').onclick = ()=>openItem();
-      document.getElementById('btnIn').onclick  = ()=>openMove('in');
-      document.getElementById('btnOut').onclick = ()=>openMove('out');
-      document.getElementById('btnRefresh').onclick = loadAll;
-      document.getElementById('btnExport').onclick = exportToExcel;
-      document.getElementById('btnSettings').onclick = ()=>showModal('modalSettings', true);
-      
-      document.querySelectorAll('[data-close]').forEach(el=>el.onclick=()=>{
-        el.closest('.modal').classList.remove('show');
-        document.body.style.overflow = 'auto';
-      });
-      
-      document.getElementById('saveItem').onclick = saveItem;
-      document.getElementById('applyMove').onclick = applyMove;
-
-      document.getElementById('search').oninput = e=>{ FILTER.q = e.target.value; renderRows(); };
-      document.getElementById('filterCat').onchange = e=>{ FILTER.cat = e.target.value; renderRows(); };
-      document.getElementById('filterStatus').onchange = e=>{ FILTER.status = e.target.value; renderRows(); };
-    }
-
-    // بدء التشغيل
+function doGet() {
+  return ContentService.createTextOutput(JSON.stringify({error: "Use POST requests only"})).setMimeType(ContentService.MimeType.JSON);
+}    // بدء التشغيل
     init();
   </script>
 </body>
